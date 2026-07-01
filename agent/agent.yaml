@@ -22,3 +22,8 @@ mcp_servers:
 skills:
   - cash-over-short
   - loss-prevention
+  - policy
+  - three-way-match
+  - duplicate-payment
+  - settlement
+  - cogs-leakage

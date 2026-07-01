@@ -15,5 +15,6 @@ def scan_all(client, runner=None):
         from agent.sdk_loop import run_agent
         runner = run_agent
     system = _system()
-    for duty in ("cash-over-short", "loss-prevention"):
+    for duty in ("cash-over-short", "loss-prevention", "three-way-match",
+                 "duplicate-payment", "settlement", "cogs-leakage"):
         runner(system, _skill(duty), client)
