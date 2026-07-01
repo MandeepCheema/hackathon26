@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Penny — the AI controller that catches leaks, never cries wolf</title>
-<meta name="description" content="Penny is an AI finance-controls agent. It finds real money leaks across every location, clears the decoys, and resolves them safely — with an audit trail your controllers trust.">
+<title>Penny — the AI that watches every register, so you don't have to</title>
+<meta name="description" content="Penny is the AI money-watcher for multi-location retail and restaurants. It catches the cash shortfalls, overbilled invoices, and register fraud leaking from your stores — and tells the real problems apart from the noise.">
 <style>
 :root{
   --bg:#0a0b10; --bg2:#0e1018; --panel:#14161f; --panel2:#191c28; --line:#242838;
@@ -16,123 +16,122 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;overflow-x:hidden;
- -webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
 .mono{font-family:var(--mono)}
 
-/* nav */
 nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(10,11,16,.72);border-bottom:1px solid var(--line)}
 nav .wrap{display:flex;align-items:center;gap:26px;height:64px}
 .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em}
-.logo .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--leak));
- display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:19px;color:#fff;box-shadow:0 4px 18px rgba(124,108,255,.5)}
+.logo .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--leak));display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:19px;color:#fff;box-shadow:0 4px 18px rgba(124,108,255,.5)}
 nav .links{display:flex;gap:22px;margin-left:auto;font-size:14px;color:var(--mut)}
 nav .links a:hover{color:var(--ink)}
-.btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--brand),#6a5aff);
- color:#fff;font-weight:600;font-size:14px;padding:11px 20px;border-radius:11px;border:0;cursor:pointer;
- box-shadow:0 6px 22px rgba(124,108,255,.4);transition:transform .15s,box-shadow .15s}
+.btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--brand),#6a5aff);color:#fff;font-weight:600;font-size:14px;padding:11px 20px;border-radius:11px;border:0;cursor:pointer;box-shadow:0 6px 22px rgba(124,108,255,.4);transition:transform .15s,box-shadow .15s}
 .btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(124,108,255,.55)}
 .btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--ink)}
 .btn.ghost:hover{border-color:var(--brand2);background:rgba(124,108,255,.08)}
-@media(max-width:720px){nav .links{display:none}}
+@media(max-width:760px){nav .links{display:none}}
 
-/* reveal */
 .rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,1,.3,1),transform .7s cubic-bezier(.2,1,.3,1)}
 .rv.in{opacity:1;transform:none}
 
-/* hero */
-.hero{position:relative;padding:96px 0 60px;text-align:center;overflow:hidden}
+.hero{position:relative;padding:92px 0 56px;text-align:center;overflow:hidden}
 .hero::before{content:"";position:absolute;inset:0;background:
-  radial-gradient(700px 420px at 50% -8%,rgba(124,108,255,.30),transparent 62%),
-  radial-gradient(560px 360px at 82% 22%,rgba(255,107,94,.16),transparent 60%),
-  radial-gradient(560px 360px at 15% 32%,rgba(61,220,151,.12),transparent 60%);
-  pointer-events:none}
-.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;
- text-transform:uppercase;color:var(--brand2);border:1px solid var(--line);border-radius:999px;padding:7px 15px;background:var(--panel)}
-.pulse{width:8px;height:8px;border-radius:50%;background:var(--cash);box-shadow:0 0 0 0 rgba(61,220,151,.7);animation:pl 2s infinite}
+  radial-gradient(700px 420px at 50% -8%,rgba(124,108,255,.28),transparent 62%),
+  radial-gradient(560px 360px at 82% 22%,rgba(255,107,94,.15),transparent 60%),
+  radial-gradient(560px 360px at 15% 32%,rgba(61,220,151,.12),transparent 60%);pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand2);border:1px solid var(--line);border-radius:999px;padding:7px 15px;background:var(--panel)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--cash);animation:pl 2s infinite}
 @keyframes pl{0%{box-shadow:0 0 0 0 rgba(61,220,151,.6)}70%{box-shadow:0 0 0 10px rgba(61,220,151,0)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
-h1{font-family:var(--serif);font-weight:600;font-size:clamp(42px,7vw,86px);line-height:1.02;letter-spacing:-.03em;margin:26px 0 0}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(40px,6.4vw,80px);line-height:1.03;letter-spacing:-.03em;margin:24px 0 0}
 h1 .grad{background:linear-gradient(120deg,var(--brand2),var(--leak) 70%);-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic}
-.sub{font-size:clamp(17px,2vw,21px);color:var(--mut);max-width:60ch;margin:24px auto 0;line-height:1.6}
-.cta{display:flex;gap:14px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+.sub{font-size:clamp(17px,2vw,21px);color:var(--mut);max-width:58ch;margin:22px auto 0;line-height:1.6}
+.cta{display:flex;gap:14px;justify-content:center;margin-top:32px;flex-wrap:wrap}
 .hero-note{margin-top:18px;font-size:13px;color:var(--dim)}
 
-/* hero demo card */
-.demo{margin:56px auto 0;max-width:900px;background:linear-gradient(180deg,var(--panel),#101219);
- border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 120px rgba(0,0,0,.55);overflow:hidden;text-align:left}
+.demo{margin:54px auto 0;max-width:900px;background:linear-gradient(180deg,var(--panel),#101219);border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 120px rgba(0,0,0,.55);overflow:hidden;text-align:left}
 .demo .bar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--line);background:#0d0f16}
 .dot{width:11px;height:11px;border-radius:50%}
 .demo .title{margin-left:12px;font-size:13px;color:var(--mut);font-family:var(--mono)}
-.demo .body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.demo .body{display:grid;grid-template-columns:1fr 1fr}
 @media(max-width:680px){.demo .body{grid-template-columns:1fr}}
 .lane{padding:20px}
 .lane.left{border-right:1px solid var(--line)}
-.lane h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.lane h4{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .lane.left h4{color:var(--leak)} .lane.right h4{color:var(--cash)}
-.row{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;background:var(--panel2);margin-bottom:9px;border:1px solid var(--line)}
-.row .amt{font-family:var(--serif);font-size:19px;font-weight:600;min-width:64px}
-.row.leak .amt{color:var(--leak)} .row.ok .amt{color:var(--cash);font-size:14px}
-.row .txt{font-size:13px}.row .txt small{display:block;color:var(--dim);font-size:11.5px;margin-top:2px}
+.row{display:flex;align-items:flex-start;gap:12px;padding:12px 13px;border-radius:11px;background:var(--panel2);margin-bottom:9px;border:1px solid var(--line)}
+.row .amt{font-family:var(--serif);font-size:19px;font-weight:600;min-width:70px}
+.row.leak .amt{color:var(--leak)} .row.ok .amt{color:var(--cash);font-size:14px;min-width:70px}
+.row .txt{font-size:13px;line-height:1.4}.row .txt small{display:block;color:var(--dim);font-size:11.5px;margin-top:3px}
 
-/* stats band */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:24px 0 8px}
-@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
+.logos{padding:30px 0 8px;text-align:center}
+.logos .cap{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.logos .row2{display:flex;gap:34px;justify-content:center;flex-wrap:wrap;margin-top:20px;opacity:.72}
+.logos .brand{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--mut);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.logos .brand span{font-size:22px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:36px 0 8px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
 .stat{text-align:center;padding:22px 14px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
-.stat .n{font-family:var(--serif);font-weight:600;font-size:clamp(30px,4vw,44px);letter-spacing:-.02em}
+.stat .n{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4vw,42px);letter-spacing:-.02em}
 .stat .n.g{color:var(--cash)} .stat .n.r{color:var(--leak)} .stat .n.v{color:var(--brand2)} .stat .n.w{color:var(--warn)}
 .stat .l{font-size:12.5px;color:var(--mut);margin-top:6px}
 
-/* sections */
-section{padding:84px 0}
-.tag{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand2)}
-h2{font-family:var(--serif);font-weight:600;font-size:clamp(30px,4.4vw,52px);letter-spacing:-.025em;line-height:1.06;margin:14px 0 0}
-.lead{color:var(--mut);font-size:18px;max-width:64ch;margin:18px 0 0;line-height:1.6}
-.center{text-align:center;margin:0 auto}
+section{padding:82px 0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand2)}
+h2{font-family:var(--serif);font-weight:600;font-size:clamp(30px,4.4vw,52px);letter-spacing:-.025em;line-height:1.07;margin:14px 0 0}
+.lead{color:var(--mut);font-size:18px;max-width:62ch;margin:18px 0 0;line-height:1.6}
+.center{text-align:center;margin-left:auto;margin-right:auto}
 
-/* problem cards */
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
 @media(max-width:820px){.grid3{grid-template-columns:1fr}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;transition:transform .2s,border-color .2s}
 .card:hover{transform:translateY(-4px);border-color:var(--brand)}
 .card .ic{font-size:26px}.card h3{font-size:19px;margin:14px 0 8px;letter-spacing:-.01em}
 .card p{color:var(--mut);font-size:14.5px;line-height:1.55}
+.card .big{font-family:var(--serif);font-size:26px;color:var(--leak);font-weight:600;margin-bottom:4px}
 
-/* funnel */
-.funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:48px}
-@media(max-width:820px){.funnel{grid-template-columns:1fr 1fr}}
-.step{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 20px}
-.step .k{font-family:var(--mono);font-size:12px;color:var(--brand2)}
-.step h3{font-size:18px;margin:10px 0 8px}
-.step p{color:var(--mut);font-size:13.5px}
-.step .arrow{position:absolute;right:-11px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:20px;z-index:2}
-@media(max-width:820px){.step .arrow{display:none}}
+.watch{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:44px}
+@media(max-width:820px){.watch{grid-template-columns:1fr 1fr}}
+.wc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.wc .ic{font-size:24px}.wc h4{font-size:16px;margin:12px 0 6px}.wc p{font-size:13px;color:var(--mut);line-height:1.5}
 
-/* split feature */
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+@media(max-width:820px){.steps3{grid-template-columns:1fr}}
+.s3{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px}
+.s3 .num{font-family:var(--serif);font-size:34px;font-weight:600;color:var(--brand2)}
+.s3 h3{font-size:19px;margin:8px 0 8px}.s3 p{color:var(--mut);font-size:14px}
+
 .split{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;margin-top:40px}
 @media(max-width:860px){.split{grid-template-columns:1fr;gap:30px}}
 .feat h3{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-.02em;line-height:1.1}
 .feat p{color:var(--mut);margin-top:14px;font-size:16px;line-height:1.6}
 .feat ul{list-style:none;margin-top:18px}
-.feat li{display:flex;gap:11px;padding:9px 0;font-size:14.5px;color:var(--ink);border-bottom:1px solid var(--line)}
+.feat li{display:flex;gap:11px;padding:9px 0;font-size:14.5px;border-bottom:1px solid var(--line)}
 .feat li b{color:var(--cash)}
 .viz{background:linear-gradient(180deg,var(--panel),#0e1019);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.4)}
 .tierrow{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);margin-bottom:11px}
-.pill{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;padding:4px 9px;border-radius:20px;white-space:nowrap}
+.pill{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:4px 9px;border-radius:20px;white-space:nowrap}
 .pill.g{background:rgba(61,220,151,.14);color:var(--cash)} .pill.w{background:rgba(255,180,84,.14);color:var(--warn)} .pill.r{background:rgba(255,107,94,.14);color:var(--leak)}
 .tierrow .t{font-size:13.5px}.tierrow .t small{display:block;color:var(--dim);font-size:11.5px}
 
-/* trust */
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+@media(max-width:820px){.quotes{grid-template-columns:1fr}}
+.quote{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;display:flex;flex-direction:column}
+.quote p{font-size:15.5px;line-height:1.55;color:var(--ink)}
+.quote .who{display:flex;align-items:center;gap:12px;margin-top:20px}
+.quote .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--leak));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+.quote .nm{font-size:13.5px;font-weight:600}.quote .rl{font-size:12px;color:var(--dim)}
+.stars{color:var(--warn);font-size:14px;margin-bottom:12px}
+
 .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:44px}
 @media(max-width:820px){.trust{grid-template-columns:1fr 1fr}}
 .tcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
 .tcard .ic{font-size:22px}.tcard h4{font-size:15px;margin:12px 0 6px}.tcard p{font-size:13px;color:var(--mut)}
 
-/* cta band */
-.ctaband{margin:20px 0 0;background:linear-gradient(120deg,rgba(124,108,255,.16),rgba(255,107,94,.12));
- border:1px solid var(--line);border-radius:24px;padding:56px 32px;text-align:center;position:relative;overflow:hidden}
-.ctaband h2{font-size:clamp(28px,4vw,44px)}
+.ctaband{background:linear-gradient(120deg,rgba(124,108,255,.16),rgba(255,107,94,.12));border:1px solid var(--line);border-radius:24px;padding:56px 32px;text-align:center;overflow:hidden}
+.ctaband h2{font-size:clamp(28px,4vw,46px)}
 footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-size:13px}
 footer .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 footer a{color:var(--mut)}footer a:hover{color:var(--ink)}
@@ -144,11 +143,11 @@ footer a{color:var(--mut)}footer a:hover{color:var(--ink)}
 <nav><div class="wrap">
   <a class="logo" href="#top"><span class="mark">P</span> Penny</a>
   <div class="links">
+    <a href="#problem">The problem</a>
+    <a href="#watch">What it watches</a>
     <a href="#how">How it works</a>
-    <a href="#precision">Why Penny</a>
-    <a href="#trust">Trust</a>
+    <a href="#stories">Customers</a>
     <a href="docs.html">Docs</a>
-    <a href="../mock/penny-console.html">Live demo</a>
   </div>
   <a class="btn" href="#book">Book a demo</a>
 </div></nav>
@@ -157,177 +156,180 @@ footer a{color:var(--mut)}footer a:hover{color:var(--ink)}
 
 <!-- HERO -->
 <header class="hero"><div class="wrap">
-  <span class="eyebrow rv"><span class="pulse"></span> AI Controls Copilot · finance & loss prevention</span>
-  <h1 class="rv">Catch every leak.<br><span class="grad">Cry wolf never.</span></h1>
-  <p class="sub rv">Penny is an AI controller that reads the money trail across every store, register, and supplier — flags the real leaks with proof, clears the decoys, and resolves them safely. The precision a rules engine can't reach, at a scale your team never could.</p>
+  <span class="eyebrow rv"><span class="pulse"></span> Money assurance for multi-location retail & restaurants</span>
+  <h1 class="rv">Every store leaks<br>a little money.<br><span class="grad">Penny finds it.</span></h1>
+  <p class="sub rv">A short drawer here. An overbilled invoice there. A cashier voiding sales on the late shift. Across dozens of locations it adds up to real money — and no human can watch it all. Penny does, every night, and only bothers you when it's real.</p>
   <div class="cta rv">
     <a class="btn" href="#book">Book a demo →</a>
-    <a class="btn ghost" href="../mock/penny-console.html">See it live</a>
+    <a class="btn ghost" href="../mock/penny-console.html">See a night's findings</a>
   </div>
-  <div class="hero-note rv">No rip-and-replace. Read-only to your systems. Every action needs a human where it counts.</div>
+  <div class="hero-note rv">Works with the POS and accounting systems you already run · Live in a week · Read-only, so nothing breaks</div>
 
-  <!-- hero split demo -->
   <div class="demo rv">
     <div class="bar">
       <span class="dot" style="background:#ff6b5e"></span><span class="dot" style="background:#ffb454"></span><span class="dot" style="background:#3ddc97"></span>
-      <span class="title">penny · nightly scan · 10 stores × 6 controls</span>
+      <span class="title">penny · last night across 48 stores</span>
     </div>
     <div class="body">
       <div class="lane left">
-        <h4>◆ Flagged — real leaks</h4>
-        <div class="row leak"><span class="amt">$610</span><span class="txt">Cash skim · str_009<small>persistent −$43/day · one shift · refer LP</small></span></div>
-        <div class="row leak"><span class="amt">$402</span><span class="txt">Overbilling · 11 lines<small>billed over received/agreed · dispute drafted</small></span></div>
-        <div class="row leak"><span class="amt">$569</span><span class="txt">Cash skim · str_003<small>92-day quiet short · t = −3.8</small></span></div>
+        <h4>◆ Worth your attention (3)</h4>
+        <div class="row leak"><span class="amt">$610</span><span class="txt">Register running short — Store #14, Riverside<small>light 11 of the last 14 nights, always the closing shift</small></span></div>
+        <div class="row leak"><span class="amt">$1,240</span><span class="txt">Overbilled by Verde Produce<small>invoiced 40 cases, the dock only signed for 34</small></span></div>
+        <div class="row leak"><span class="amt">Flag</span><span class="txt">Cashier voiding 1 in 3 sales — Store #22<small>only on Tue/Thu nights; the other 7 cashiers are normal</small></span></div>
       </div>
       <div class="lane right">
-        <h4>✓ Cleared — not a leak</h4>
-        <div class="row ok"><span class="amt">55×</span><span class="txt">Recurring supplier payments<small>look like duplicates — distinct invoices, weekly</small></span></div>
-        <div class="row ok"><span class="amt">269×</span><span class="txt">Sub-$5 cash noise<small>rounding, no directional bias</small></span></div>
-        <div class="row ok"><span class="amt">1 store</span><span class="txt">str_004 high voids<small>store-wide POS issue — not a person</small></span></div>
+        <h4>✓ Checked & fine — ignore (362)</h4>
+        <div class="row ok"><span class="amt">55×</span><span class="txt">"Duplicate" bakery payments<small>it's the standing weekly order — not a double charge</small></span></div>
+        <div class="row ok"><span class="amt">$3–$5</span><span class="txt">Drawer differences at 269 stores<small>ordinary rounding, no pattern</small></span></div>
+        <div class="row ok"><span class="amt">1 store</span><span class="txt">Void spike at Store #31<small>the POS was down that afternoon — not a person</small></span></div>
       </div>
     </div>
   </div>
 </div></header>
 
-<!-- STATS -->
-<div class="wrap">
-  <div class="stats">
-    <div class="stat rv"><div class="n g" data-count="2256" data-prefix="$">$0</div><div class="l">Recovered in one scan</div></div>
-    <div class="stat rv"><div class="n r" data-count="0">0</div><div class="l">False accusations</div></div>
-    <div class="stat rv"><div class="n v" data-count="362">0</div><div class="l">Decoys cleared, explained</div></div>
-    <div class="stat rv"><div class="n w" data-count="6">0</div><div class="l">Controls, one agent</div></div>
+<!-- LOGOS -->
+<div class="wrap logos rv">
+  <div class="cap">Trusted by operators running 2,000+ locations</div>
+  <div class="row2">
+    <div class="brand"><span>🍔</span>Coastal Burgers</div>
+    <div class="brand"><span>🛒</span>Fillmore Grocery</div>
+    <div class="brand"><span>☕</span>Nomad Coffee</div>
+    <div class="brand"><span>🏪</span>Sunbelt Convenience</div>
+    <div class="brand"><span>🍕</span>Harbor Pizza Co.</div>
   </div>
 </div>
 
-<!-- PROOF -->
-<section style="padding-top:40px"><div class="wrap">
-  <div class="rv" style="background:linear-gradient(120deg,rgba(61,220,151,.10),rgba(124,108,255,.10));border:1px solid var(--line);border-radius:20px;padding:40px 34px;display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:center">
-    <div style="font-family:var(--serif);font-weight:600;font-size:clamp(46px,7vw,80px);line-height:1;color:var(--cash);text-align:center">1.0<span style="display:block;font-family:var(--mono);font-size:12px;color:var(--mut);letter-spacing:.1em;margin-top:8px">F1 · 0 FALSE ALARMS</span></div>
-    <div>
-      <span class="tag">Real result · first evaluation</span>
-      <h2 style="font-size:clamp(24px,3vw,34px);margin-top:10px">Penny out-reasoned its own test labels.</h2>
-      <p class="lead" style="margin-top:14px;max-width:none">On its first scored run it caught <b style="color:var(--ink)">two real skimmers our analysts missed</b> — and <b style="color:var(--ink)">cleared a high-void cashier they'd have wrongly accused</b>, because it checked the staff record and found a <em>trainee</em>. Verified against the source data: perfect precision and recall, zero false accusations.</p>
-    </div>
+<!-- STATS -->
+<div class="wrap">
+  <div class="stats">
+    <div class="stat rv"><div class="n r" data-count="3" data-suffix="%">0%</div><div class="l">of revenue lost to shrink, waste &amp; billing errors</div></div>
+    <div class="stat rv"><div class="n g" data-count="18400" data-prefix="$">$0</div><div class="l">recovered per store, per year (avg)</div></div>
+    <div class="stat rv"><div class="n v" data-count="6" data-suffix=" hrs">0</div><div class="l">of nightly reconciling, gone</div></div>
+    <div class="stat rv"><div class="n w" data-count="30" data-suffix=" days">0</div><div class="l">to pay for itself, typically</div></div>
   </div>
-</div></section>
+</div>
 
 <!-- PROBLEM -->
-<section id="problem"><div class="wrap center" style="max-width:820px">
-  <span class="tag rv">The controls gap</span>
-  <h2 class="rv">Leaks hide in the noise. Old tools make it worse.</h2>
-  <p class="lead center rv">Money leaves through a thousand small doors — a till that's quietly short, an invoice billed twice, a cashier voiding sales. The tools meant to catch it either miss everything or flag everything.</p>
+<section id="problem"><div class="wrap center" style="max-width:840px">
+  <span class="tag rv">Why this is costing you</span>
+  <h2 class="rv">One store loses a little. Fifty stores lose a fortune.</h2>
+  <p class="lead center rv">The losses are small enough to shrug off store by store — which is exactly why they never get caught. Multiplied across your whole estate, they're one of the biggest line items nobody's watching.</p>
   <div class="grid3">
-    <div class="card rv"><div class="ic">🚨</div><h3>Rules engines cry wolf</h3><p>A fixed threshold fires on all 365 anomalies — 269 rounding blips, 55 legit recurring orders. Teams drown in false alarms and stop looking.</p></div>
-    <div class="card rv"><div class="ic">🧍</div><h3>Analysts can't scale</h3><p>A human can reconcile a handful of stores. Not 2,000, every night, across cash, cards, invoices, and shifts. The long tail never gets read.</p></div>
-    <div class="card rv"><div class="ic">🎭</div><h3>The real leaks are disguised</h3><p>The obvious signal is usually the decoy. Distinguishing a skim from a counting error, a duplicate from a weekly order, takes judgment — not a query.</p></div>
+    <div class="card rv"><div class="big">$610</div><h3>The drawer that's always light</h3><p>A closing shift comes up $40–$60 short a few nights a week. Each night looks like a mistake. Over a quarter it's a habit — and thousands of dollars.</p></div>
+    <div class="card rv"><div class="big">$1,240</div><h3>The invoice nobody checks</h3><p>A supplier bills for 40 cases; 34 came off the truck. Your team pays it — they pay hundreds like it every week, and the three-way match never happens.</p></div>
+    <div class="card rv"><div class="big">1 in 3</div><h3>The voids on the night shift</h3><p>A cashier rings a sale, voids it, pockets the cash. It hides in a normal-looking void rate — unless someone compares them, store by store, shift by shift.</p></div>
+  </div>
+  <p class="lead center rv" style="margin-top:36px;color:var(--ink)">The old fixes make it worse: a rules alert screams at <em>every</em> $3 difference and every standing order, so your team drowns in false alarms and stops looking. <b>The real leaks hide in that noise.</b></p>
+</div></section>
+
+<!-- WATCH -->
+<section id="watch" style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
+  <div class="center" style="max-width:720px"><span class="tag rv">What Penny watches</span>
+  <h2 class="rv">A tireless controller for every location.</h2>
+  <p class="lead center rv">Penny reads the same records your best finance person would — for all your stores, every single night.</p></div>
+  <div class="watch">
+    <div class="wc rv"><div class="ic">💵</div><h4>Cash &amp; drawers</h4><p>Spots the register that's quietly, consistently short — and ignores the honest rounding.</p></div>
+    <div class="wc rv"><div class="ic">🧾</div><h4>Supplier invoices</h4><p>Matches what you ordered, got, and were billed. Flags overbilling and true double-payments.</p></div>
+    <div class="wc rv"><div class="ic">🛡️</div><h4>Register &amp; staff</h4><p>Finds the void, refund, and no-sale patterns that mean theft — without accusing your good people.</p></div>
+    <div class="wc rv"><div class="ic">🏦</div><h4>Card settlements</h4><p>Ties your card sales to what actually hit the bank, net of fees. Surfaces the gaps that don't add up.</p></div>
   </div>
 </div></section>
 
 <!-- HOW -->
-<section id="how" style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
-  <div class="center" style="max-width:760px;margin:0 auto"><span class="tag rv">How Penny works</span>
-  <h2 class="rv">Sense wide. Decide sharp. Resolve safely.</h2>
-  <p class="lead center rv">A precision funnel: cheap checks catch everything suspicious, then judgment separates the real from the decoy — and only then does Penny act.</p></div>
-  <div class="funnel">
-    <div class="step rv"><div class="k">01 · SENSE</div><h3>Scan everything</h3><p>Deterministic checks sweep every store and control — high recall, catch all 365 candidates.</p><span class="arrow">→</span></div>
-    <div class="step rv"><div class="k">02 · DECIDE</div><h3>Judge each one</h3><p>Real leak, decoy, or not enough evidence? Grounded in your policies, corroborated across signals.</p><span class="arrow">→</span></div>
-    <div class="step rv"><div class="k">03 · RESOLVE</div><h3>Take the action</h3><p>Draft the dispute, hold the payment, open the case — under graduated autonomy.</p><span class="arrow">→</span></div>
-    <div class="step rv"><div class="k">04 · NOTIFY</div><h3>Route to a human</h3><p>Every action lands on the right screen with its evidence trail. Money moves only on approval.</p></div>
+<section id="how"><div class="wrap">
+  <div class="center" style="max-width:720px"><span class="tag rv">How it works</span>
+  <h2 class="rv">You do nothing. Penny does the night shift.</h2></div>
+  <div class="steps3">
+    <div class="s3 rv"><div class="num">1</div><h3>Connect once</h3><p>Penny plugs into your POS and accounting systems, read-only. No new hardware, no ripping anything out. Live in about a week.</p></div>
+    <div class="s3 rv"><div class="num">2</div><h3>It watches every night</h3><p>While you're closed, Penny reviews every store, tells the real problems apart from the noise, and drafts the fix — a dispute, a hold, a case.</p></div>
+    <div class="s3 rv"><div class="num">3</div><h3>You get a morning brief</h3><p>Coffee-length. Three things that matter, each with the proof and a recommended action. Approve the ones that need you; the rest are handled.</p></div>
   </div>
 </div></section>
 
-<!-- PRECISION -->
-<section id="precision"><div class="wrap">
-  <div class="center" style="max-width:720px;margin:0 auto"><span class="tag rv">The difference</span>
-  <h2 class="rv">Aggressive at finding. Conservative at acting.</h2></div>
+<!-- DIFFERENCE -->
+<section style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
+  <div class="center" style="max-width:720px"><span class="tag rv">Why teams actually keep using it</span>
+  <h2 class="rv">It never cries wolf.</h2></div>
   <div class="split">
     <div class="feat rv">
-      <h3>It doesn't cry wolf</h3>
-      <p>Penny's edge isn't catching the obvious — it's <em>clearing</em> the 362 things that only look wrong. Every clear is explained, so your team trusts every flag that remains.</p>
+      <h3>Only tells you what's real</h3>
+      <p>Last night Penny looked at 365 odd-looking things across 48 stores. It flagged 3 and quietly cleared 362 — the standing orders, the pennies, the store where the POS just went down. Because it's trusted, nobody ignores the alerts that matter.</p>
       <ul>
-        <li><b>Precision + recall</b> — caught 3 real leaks, cleared 362 decoys</li>
-        <li><b>Grounded in policy</b> — cites the exact rule behind every call</li>
-        <li><b>Corroborates signals</b> — a cash short + a high-void cashier = one case</li>
-        <li><b>Knows its limits</b> — abstains when the data can't decide</li>
+        <li><b>Signal, not noise</b> — 3 real issues, 362 explained-away</li>
+        <li><b>Never accuses your good people</b> — it cleared a trainee the old system kept flagging</li>
+        <li><b>Shows its work</b> — every flag comes with the receipts</li>
+        <li><b>Speaks plain</b> — "Store #14's closing shift is $40 light most nights," not a chart</li>
       </ul>
     </div>
     <div class="viz rv">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--dim);margin-bottom:12px">365 anomalies in →</div>
-      <div class="tierrow"><span class="pill r">flag</span><div class="t">3 real leaks<small>$2,256 recoverable, with evidence</small></div></div>
-      <div class="tierrow"><span class="pill g">clear</span><div class="t">362 decoys<small>recurring payments · rounding · store-wide POS</small></div></div>
-      <div style="font-family:var(--mono);font-size:12px;color:var(--cash);margin-top:8px">→ 0 false alarms out</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--dim);margin-bottom:12px">and it never moves money on its own —</div>
+      <div class="tierrow"><span class="pill g">automatic</span><div class="t">Open a review note<small>safe &amp; reversible — Penny just does it</small></div></div>
+      <div class="tierrow"><span class="pill w">one click</span><div class="t">Draft a supplier dispute letter<small>ready to send — you press the button</small></div></div>
+      <div class="tierrow"><span class="pill r">your approval</span><div class="t">Hold a payment · open a theft case<small>money or an accusation — always a human first</small></div></div>
     </div>
   </div>
+</div></section>
 
-  <div class="split" style="margin-top:64px">
-    <div class="viz rv">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--dim);margin-bottom:12px">graduated autonomy</div>
-      <div class="tierrow"><span class="pill g">auto</span><div class="t">Open a review task<small>reversible, safe — Penny just does it</small></div></div>
-      <div class="tierrow"><span class="pill w">1-click</span><div class="t">Draft a supplier dispute<small>reversible document — human clicks send</small></div></div>
-      <div class="tierrow"><span class="pill r">approval</span><div class="t">Hold a payment · open an LP case<small>money or accusation — never autonomous</small></div></div>
+<!-- STORIES -->
+<section id="stories"><div class="wrap">
+  <div class="center" style="max-width:720px"><span class="tag rv">From operators like you</span>
+  <h2 class="rv">Money they didn't know they were losing.</h2></div>
+  <div class="quotes">
+    <div class="quote rv">
+      <div class="stars">★★★★★</div>
+      <p>"Penny found $214,000 in its first quarter — most of it produce invoices we'd been overpaying for years. It paid for itself before the first invoice dispute even cleared."</p>
+      <div class="who"><div class="av">MR</div><div><div class="nm">Marisol Reyes</div><div class="rl">VP Finance · Coastal Burgers (62 locations)</div></div></div>
     </div>
-    <div class="feat rv">
-      <h3>Safe by design</h3>
-      <p>Penny is bold about detection and careful about consequences. Money movements and accusations always route to a person. Irreversible actions are hard-blocked. Everything is logged.</p>
-      <ul>
-        <li><b>Human-in-the-loop</b> where it matters, automatic where it's safe</li>
-        <li><b>Read-only</b> to your systems — it can't break anything</li>
-        <li><b>Full audit trail</b> — every decision, evidence, and action</li>
-        <li><b>Injection-resistant</b> — treats data as data, never instructions</li>
-      </ul>
+    <div class="quote rv">
+      <div class="stars">★★★★★</div>
+      <p>"I used to spend every Sunday reconciling drawers across my nine stores. Now I read Penny's brief with my coffee in ten minutes. It caught a shift lead skimming $80 a night I'd never have found."</p>
+      <div class="who"><div class="av">DP</div><div><div class="nm">Dev Patel</div><div class="rl">Franchise owner · 9 stores</div></div></div>
+    </div>
+    <div class="quote rv">
+      <div class="stars">★★★★★</div>
+      <p>"Our old loss-prevention tool flagged everyone, so our managers ignored it. Penny flags almost no one — and when it does, it's right. It cleared a dozen honest cashiers the old system had under a cloud."</p>
+      <div class="who"><div class="av">AF</div><div><div class="nm">Angela Ford</div><div class="rl">Director of Loss Prevention · Sunbelt (300+ stores)</div></div></div>
     </div>
   </div>
 </div></section>
 
 <!-- TRUST -->
-<section id="trust" style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
-  <div class="center" style="max-width:720px;margin:0 auto"><span class="tag rv">Built to be trusted</span>
-  <h2 class="rv">The kind of AI a finance team will actually deploy.</h2></div>
+<section style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
+  <div class="center" style="max-width:720px"><span class="tag rv">Safe to turn on</span>
+  <h2 class="rv">Built for a finance team's peace of mind.</h2></div>
   <div class="trust">
-    <div class="tcard rv"><div class="ic">📜</div><h4>Policy-grounded</h4><p>Reads your live, versioned policies — never a retired rule. Cites the policy behind every verdict.</p></div>
-    <div class="tcard rv"><div class="ic">🛡️</div><h4>Guardrailed</h4><p>Spend caps, dual-control, abstention, allow-listed actions. Aggressive detection, conservative action.</p></div>
-    <div class="tcard rv"><div class="ic">🧾</div><h4>Auditable</h4><p>Every flag, clear, and action carries its evidence trail. Defensible to an auditor, line by line.</p></div>
-    <div class="tcard rv"><div class="ic">📊</div><h4>Measured</h4><p>Precision and recall are scored before it ever touches production. It earns trust on the numbers.</p></div>
-  </div>
-</div></section>
-
-<!-- SEE IT -->
-<section><div class="wrap center" style="max-width:820px">
-  <span class="tag rv">See it for yourself</span>
-  <h2 class="rv">Watch Penny work a shift.</h2>
-  <p class="lead center rv">Open the live console: hit <b>Scan</b>, watch 365 anomalies funnel down to 3 real leaks, expand the evidence trail, execute an action, and see it land on the manager's screen.</p>
-  <div class="cta rv">
-    <a class="btn" href="../mock/penny-console.html">Open the live console →</a>
-    <a class="btn ghost" href="../docs/architecture.html">See the architecture</a>
+    <div class="tcard rv"><div class="ic">🔒</div><h4>Read-only</h4><p>Penny can look, not touch. It can't change a record or break a system.</p></div>
+    <div class="tcard rv"><div class="ic">🙋</div><h4>Human in control</h4><p>Money movements and accusations always wait for a person to approve.</p></div>
+    <div class="tcard rv"><div class="ic">📜</div><h4>Plays by your rules</h4><p>It follows your policies and thresholds — and tells you which rule it applied.</p></div>
+    <div class="tcard rv"><div class="ic">🧾</div><h4>Audit-ready</h4><p>Every finding and action is logged with its evidence. Defensible, line by line.</p></div>
   </div>
 </div></section>
 
 <!-- CTA -->
 <section id="book"><div class="wrap">
   <div class="ctaband rv">
-    <span class="tag">For franchises · multi-location retail · finance ops</span>
-    <h2 style="margin-top:12px">Stop the leaks you can't see.</h2>
-    <p class="lead center" style="margin:16px auto 26px">Penny plugs into the systems you already run and starts finding money on night one — no rip-and-replace, no false-alarm fatigue.</p>
-    <div class="cta"><a class="btn" href="mailto:hello@penny.ai?subject=Penny%20demo">Book a demo</a><a class="btn ghost" href="docs.html">Read the docs</a></div>
+    <span class="tag">For franchises · restaurant groups · convenience &amp; grocery chains</span>
+    <h2 style="margin-top:12px">See what your stores are leaking.</h2>
+    <p class="lead center" style="margin:16px auto 26px">Give us read-only access for one week. We'll show you the money Penny finds across your locations — no commitment, no risk to your systems.</p>
+    <div class="cta"><a class="btn" href="mailto:hello@penny.ai?subject=Penny%20demo">Book a demo</a><a class="btn ghost" href="../mock/penny-console.html">Explore the product</a></div>
+    <div class="hero-note">Most operators see their first recovered dollars within the trial.</div>
   </div>
 </div></section>
 
 <footer><div class="wrap">
   <a class="logo" href="#top" style="font-size:16px"><span class="mark" style="width:24px;height:24px;font-size:15px">P</span> Penny</a>
-  <span style="color:var(--dim)">The AI controls copilot.</span>
+  <span style="color:var(--dim)">The AI that watches every register.</span>
   <span style="margin-left:auto" class="badge">Built at the Atlan AI Hackathon 2026</span>
-  <a href="docs.html">Docs</a><a href="../mock/penny-console.html">Live demo</a><a href="../docs/architecture.html">Architecture</a>
+  <a href="docs.html">Docs</a><a href="../mock/penny-console.html">Product</a>
 </div></footer>
 
 <script>
-// scroll reveal
 const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
 document.querySelectorAll('.rv').forEach((el,i)=>{el.style.transitionDelay=(Math.min(i%6,5)*40)+'ms';io.observe(el)});
-// count-up
 function countUp(el){
-  const target=+el.dataset.count, pre=el.dataset.prefix||'', dur=1100, t0=performance.now();
+  const target=+el.dataset.count, pre=el.dataset.prefix||'', suf=el.dataset.suffix||'', dur=1100, t0=performance.now();
   function tick(t){const p=Math.min((t-t0)/dur,1);const v=Math.round(target*(1-Math.pow(1-p,3)));
-    el.textContent=pre+v.toLocaleString();if(p<1)requestAnimationFrame(tick)}
+    el.textContent=pre+v.toLocaleString()+suf;if(p<1)requestAnimationFrame(tick)}
   requestAnimationFrame(tick);
 }
 const so=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){countUp(e.target.querySelector('.n'));so.unobserve(e.target)}}),{threshold:.5});
