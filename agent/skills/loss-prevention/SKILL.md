@@ -14,8 +14,12 @@ description: Detect a cashier skimming via anomalous void/refund/no-sale pattern
    - Compute whether the anomaly is **individual** or **store-wide**: if 3+ staff in the same store
      are high-void (store_void_rate elevated), treat as **store-wide → `clear`** (POS/process, not theft).
    - **`refer_investigation`** — `z_void >= 2.5` AND the store is NOT store-wide AND the staffer has
-     enough activity (sales+voids >= 20). `primary_signal='void_rate'`.
-   - **`monitor`** — `1.5 <= z_void < 2.5` and individual.
+     enough activity (sales+voids >= 20). `primary_signal='void_rate'`. This is a **firm rule**: a
+     qualifying individual outlier IS a refer. Do **NOT** downgrade it to `monitor` because the
+     dollar amount looks small or the store's cash reconciles — **void-skimming is cash-neutral by
+     design** (ring the sale, void it, pocket the cash), so balanced cash is expected, not exonerating.
+   - **`monitor`** — ONLY the softer band `1.5 <= z_void < 2.5` (individual). Never use `monitor` for a
+     staffer whose `z_void >= 2.5` — that is a refer.
    - **`clear`** — everyone else (you only submit clear for a staffer you explicitly considered and dismissed).
 3. Corroborate a `refer_investigation` with cash-over-short (same store a persistent short?) and note it.
 4. Submit via `submit_loss_flag(staff_id, store_id, risk_level, primary_signal, evidence_note)`.
