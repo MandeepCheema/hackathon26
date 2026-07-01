@@ -20,9 +20,12 @@ description: Detect a cashier skimming via anomalous void/refund/no-sale pattern
      design** (ring the sale, void it, pocket the cash), so balanced cash is expected, not exonerating.
    - **`monitor`** — ONLY the softer band `1.5 <= z_void < 2.5` (individual). Never use `monitor` for a
      staffer whose `z_void >= 2.5` — that is a refer.
-   - **`clear`** — everyone else (you only submit clear for a staffer you explicitly considered and dismissed).
+   - **Cleared** — everyone else. Do **NOT** call `submit_loss_flag` for a cleared staffer — the tool
+     says *submit only non-clear*. State the clearance (and why: trainee, manager, store-wide POS
+     spike, thin activity) in your answer instead.
 3. Corroborate a `refer_investigation` with cash-over-short (same store a persistent short?) and note it.
-4. Submit via `submit_loss_flag(staff_id, store_id, risk_level, primary_signal, evidence_note)`.
+4. Submit ONLY `refer_investigation` / `monitor` via
+   `submit_loss_flag(staff_id, store_id, risk_level, primary_signal, evidence_note)`.
    The note must cite void_rate, peer_mean, z_void, and whether the store is store-wide.
 
 ## Guardrails
