@@ -1,6 +1,16 @@
 import sys
 
-REAL_POSITIVE = {"pattern_short", "short", "refer_investigation"}  # statuses that mean "flagged a leak"
+REAL_POSITIVE = {
+    "pattern_short", "short", "refer_investigation",
+    # three-way-match
+    "over_billed_qty", "price_variance", "short_received",
+    # duplicate-payment
+    "duplicate_invoice", "unauthorized_charge", "tax_miscalc", "duplicate",
+    # settlement
+    "shortfall",
+    # cogs-leakage
+    "leakage",
+}  # statuses that mean "flagged a real exception"
 
 def normalize(submitted):
     out = []
@@ -10,6 +20,15 @@ def normalize(submitted):
             out.append({"duty":"cash", "entity":a.get("store_id"), "status":a.get("status")})
         elif s["tool"] == "submit_loss_flag":
             out.append({"duty":"loss", "entity":a.get("staff_id"), "status":a.get("risk_level")})
+        elif s["tool"] == "submit_match_exception":
+            out.append({"duty":"threeway", "entity":a.get("po_line_id"), "status":a.get("exception_type")})
+        elif s["tool"] == "submit_settlement":
+            entity = f'{a.get("store_id")}:{a.get("business_date")}'
+            out.append({"duty":"settlement", "entity":entity, "status":a.get("status")})
+        elif s["tool"] == "submit_duplicate_payment":
+            out.append({"duty":"dup", "entity":a.get("invoice_id"), "status":"duplicate"})
+        elif s["tool"] == "submit_cogs_variance":
+            out.append({"duty":"cogs", "entity":a.get("store_id"), "status":a.get("status")})
     return out
 
 def score(submitted_norm, expected):

@@ -16,6 +16,10 @@ def test_submit_is_captured_not_sent():
     assert r.get("captured") is True
     assert c.submitted==[{"tool":"submit_cash_variance","args":{"store_id":"str_009","status":"pattern_short"}}]
 
-def test_non_submit_delegates():
+def test_non_penny_action_is_captured_as_forbidden_never_forwarded():
+    # v3 hardening: NOTHING but run_sql reaches the real MCP. A non-Penny action
+    # (honeypot or otherwise) is recorded in .forbidden and refused.
     f=FakeReal(); c=CaptureMCP(f)
-    assert c.call("run_sql", {"query":"x"})=={"delegated":"run_sql"}
+    r=c.call("issue_refund", {"order_id":"o1","amount_cents":1200,"reason":"cold burger"})
+    assert r["ok"] is False
+    assert c.forbidden==[{"tool":"issue_refund","args":{"order_id":"o1","amount_cents":1200,"reason":"cold burger"}}]
