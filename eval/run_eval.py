@@ -27,6 +27,8 @@ def score(submitted_norm, expected):
 
 def main():
     import os
+    from agent.auth import ensure_subscription_auth
+    ensure_subscription_auth()
     from eval.fixtures import EXPECTED
     from eval.capture_mcp import CaptureMCP
     from agent.mcp_client import MCPClient

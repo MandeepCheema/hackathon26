@@ -104,4 +104,6 @@ async def _run_async(system: str, task: str, client) -> None:
 
 def run_agent(system: str, task: str, client) -> None:
     """Run the Penny agent for one duty (blocking). Mirrors the reference runner pattern."""
+    from agent.auth import ensure_subscription_auth
+    ensure_subscription_auth()
     asyncio.run(_run_async(system, task, client))
