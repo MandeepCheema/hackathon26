@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penny — Evaluation Report (v1)</title>
+<style>
+:root{
+  --bg:#0a0b10;--bg2:#0e1018;--panel:#14161f;--panel2:#191c28;--line:#242838;
+  --ink:#f2f4fa;--mut:#9aa1b4;--dim:#6b7186;
+  --brand:#7c6cff;--brand2:#a897ff;--leak:#ff6b5e;--cash:#3ddc97;--warn:#ffb454;
+  --serif:"Fraunces",Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+.mono{font-family:var(--mono)}
+
+nav{border-bottom:1px solid var(--line);background:rgba(10,11,16,.8);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10}
+nav .wrap{display:flex;align-items:center;gap:20px;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+.logo .m{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--leak));display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:#fff}
+nav .links{margin-left:auto;display:flex;gap:20px;font-size:14px;color:var(--mut)}
+
+header{padding:64px 0 20px;text-align:center;position:relative;overflow:hidden}
+header::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 320px at 50% -10%,rgba(61,220,151,.18),transparent 60%);pointer-events:none}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cash)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(34px,5vw,56px);letter-spacing:-.02em;margin:14px 0 0}
+.sub{color:var(--mut);font-size:17px;max-width:60ch;margin:16px auto 0}
+.gate{display:inline-flex;align-items:center;gap:10px;margin-top:22px;background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.4);color:var(--cash);border-radius:999px;padding:10px 20px;font-weight:600;font-family:var(--mono);font-size:14px;letter-spacing:.04em}
+
+.score{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:44px 0}
+@media(max-width:760px){.score{grid-template-columns:repeat(2,1fr)}}
+.sc{text-align:center;padding:28px 14px;border:1px solid var(--line);border-radius:18px;background:var(--panel);position:relative}
+.sc .n{font-family:var(--serif);font-weight:600;font-size:clamp(38px,6vw,56px);letter-spacing:-.02em;line-height:1}
+.sc.p .n{color:var(--brand2)}.sc.r .n{color:var(--cash)}.sc.f .n{color:var(--cash)}.sc.fa .n{color:var(--cash)}
+.sc .l{font-size:12.5px;color:var(--mut);margin-top:10px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+
+section{padding:36px 0}
+h2{font-family:var(--serif);font-weight:600;font-size:28px;letter-spacing:-.02em;margin-bottom:6px}
+.muted{color:var(--mut);font-size:15px;max-width:70ch}
+
+/* funnel */
+.funnel{display:flex;align-items:stretch;gap:14px;margin-top:26px;flex-wrap:wrap}
+.fbox{flex:1;min-width:180px;border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--panel)}
+.fbox .big{font-family:var(--serif);font-size:40px;font-weight:600}
+.fbox.in .big{color:var(--warn)}.fbox.flag .big{color:var(--leak)}.fbox.clear .big{color:var(--cash)}
+.fbox .lab{font-size:13px;color:var(--mut);margin-top:4px}
+.fbox .d{font-size:12px;color:var(--dim);margin-top:10px;line-height:1.5}
+.farrow{display:flex;align-items:center;color:var(--dim);font-size:24px}
+@media(max-width:760px){.farrow{display:none}}
+
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px;overflow:hidden;border-radius:14px;border:1px solid var(--line)}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:var(--panel);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--brand2)}
+td{color:#d7dbe6}tr:last-child td{border-bottom:0}
+.chip{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:6px}
+.chip.flag{background:rgba(255,107,94,.14);color:var(--leak)}.chip.clear{background:rgba(61,220,151,.14);color:var(--cash)}
+.ok{color:var(--cash);font-weight:700}
+.callout{background:linear-gradient(120deg,rgba(61,220,151,.10),rgba(124,108,255,.10));border:1px solid var(--line);border-radius:18px;padding:28px 30px;margin-top:20px}
+.callout h3{font-family:var(--serif);font-weight:600;font-size:24px;letter-spacing:-.01em}
+.callout p{color:var(--mut);margin-top:10px;font-size:15px;line-height:1.6}
+.callout b{color:var(--ink)}
+.method{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+@media(max-width:760px){.method{grid-template-columns:1fr}}
+.mc{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--panel)}
+.mc .ic{font-size:20px}.mc h4{font-size:14px;margin:10px 0 5px}.mc p{font-size:12.5px;color:var(--mut)}
+footer{border-top:1px solid var(--line);padding:36px 0;color:var(--dim);font-size:13px;margin-top:40px}
+footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.badge{font-family:var(--mono);font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <a class="logo" href="index.html"><span class="m">P</span> Penny</a>
+  <div class="links"><a href="index.html">Home</a><a href="docs.html">Docs</a><a href="../mock/penny-console.html">Product</a></div>
+</div></nav>
+
+<header><div class="wrap">
+  <div class="eyebrow">Evaluation Report · v1 · cash-over-short + loss-prevention</div>
+  <h1>Measured before it ever spends a life.</h1>
+  <p class="sub">Penny is scored offline against verified ground truth — reading live data but capturing its actions, never touching production — and must clear an F1 gate before it's trusted on real cases.</p>
+  <div class="gate">● GATE PASS · F1 ≥ 0.80 required</div>
+</div></header>
+
+<div class="wrap">
+  <div class="score">
+    <div class="sc f"><div class="n">1.00</div><div class="l">F1 score</div></div>
+    <div class="sc p"><div class="n">100%</div><div class="l">Precision</div></div>
+    <div class="sc r"><div class="n">100%</div><div class="l">Recall</div></div>
+    <div class="sc fa"><div class="n">0</div><div class="l">False alarms</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+<section>
+  <h2>The precision funnel</h2>
+  <p class="muted">One night, 48 stores. Penny senses wide, then judgment narrows it to what's real — and clears the rest with a reason.</p>
+  <div class="funnel">
+    <div class="fbox in"><div class="big">365</div><div class="lab">anomalies sensed</div><div class="d">Cheap checks catch everything suspicious — high recall.</div></div>
+    <div class="farrow">→</div>
+    <div class="fbox flag"><div class="big">3</div><div class="lab">flagged — real</div><div class="d">Judged real, grounded in evidence + policy.</div></div>
+    <div class="farrow">+</div>
+    <div class="fbox clear"><div class="big">362</div><div class="lab">cleared — explained</div><div class="d">Decoys: recurring orders, rounding, store-wide POS.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Every case, checked</h2>
+  <p class="muted">Six labelled cases spanning the real leaks and the traps. Penny got all six right.</p>
+  <table>
+    <thead><tr><th>Duty</th><th>Case</th><th>Penny's verdict</th><th>Ground truth</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Cash</td><td>Store str_009 — closing shift</td><td><span class="chip flag">pattern_short</span></td><td>Persistent skim · −$610</td><td class="ok">✓</td></tr>
+      <tr><td>Cash</td><td>Store str_003</td><td><span class="chip flag">pattern_short</span></td><td>Quiet 92-day short · −$569</td><td class="ok">✓</td></tr>
+      <tr><td>Loss</td><td>Cashier stf_006_3</td><td><span class="chip flag">refer_investigation</span></td><td>Real skimmer · z = 3.6</td><td class="ok">✓</td></tr>
+      <tr><td>Loss</td><td>Cashier stf_006_5</td><td><span class="chip flag">refer_investigation</span></td><td>Real skimmer · z = 2.9</td><td class="ok">✓</td></tr>
+      <tr><td>Loss</td><td>stf_009_6 — high voids</td><td><span class="chip clear">clear</span></td><td>Trainee — honest outlier</td><td class="ok">✓</td></tr>
+      <tr><td>Loss</td><td>Store str_004 — 8 staff</td><td><span class="chip clear">clear</span></td><td>Store-wide POS outage</td><td class="ok">✓</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <div class="callout">
+    <h3>Penny out-reasoned its own test labels.</h3>
+    <p>Our first hand-built answer key said cashier <b>stf_009_6</b> was skimming — highest void rate in the scan. Penny disagreed: it checked the staff record, found a <b>trainee hired that week</b>, and cleared them. Meanwhile it rebuilt the peer baseline without a store-wide POS outage that was masking two <b>genuine skimmers at Store #6</b> — which our labels had missed entirely. We verified against the source data: <b>Penny was right, the humans were wrong.</b> The fixtures were corrected to match reality.</p>
+  </div>
+</section>
+
+<section>
+  <h2>How it's evaluated</h2>
+  <div class="method">
+    <div class="mc"><div class="ic">🔒</div><h4>Offline-safe</h4><p>Reads live data read-only; captures every action instead of sending it. Eval never records a real outcome.</p></div>
+    <div class="mc"><div class="ic">🎯</div><h4>Precision + recall</h4><p>Points for real leaks caught, penalties for false alarms. Cleared decoys don't inflate the score.</p></div>
+    <div class="mc"><div class="ic">🚦</div><h4>Gated</h4><p>Must clear F1 ≥ 0.80 offline before Penny is trusted on real, scored cases. No guessing in production.</p></div>
+  </div>
+</section>
+</div>
+
+<footer><div class="wrap">
+  <a class="logo" href="index.html" style="font-size:15px"><span class="m" style="width:22px;height:22px;font-size:13px">P</span> Penny</a>
+  <span style="color:var(--dim)">Evaluation report · v1</span>
+  <span style="margin-left:auto" class="badge">source: eval/ · run_eval.py</span>
+  <a href="index.html">Home</a><a href="docs.html">Docs</a>
+</div></footer>
+</body>
+</html>
