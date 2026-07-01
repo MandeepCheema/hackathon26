@@ -46,13 +46,16 @@ candidate gen    ──▶   agent adjudication   ──▶   flag+evidence / cl
 | [`mock/penny-console.html`](mock/penny-console.html) | Clickable flow prototype (scan → detect → resolve → notify) |
 | [`challenges.html`](challenges.html) | All 5 hackathon challenges, one page |
 
-## Repo layout (planned)
+## Repo layout
 
 ```
-agent/        # the CMA definition — agent.yaml, skills/, mctools/ (function tools)
-app/          # Penny Console — FastAPI backend + frontend (worklist, cleared lane, ask)
-docs/         # design + decisions
-challenges.html  # reference: all 5 hackathon challenges, one page
+tools/finance_stream/  # ✅ transaction generator (Generation plane) — POS + AP sim,
+                       #    union-compatible with world.fin_*, injectable leaks/decoys
+docs/                  # ✅ design, architecture, MCP contract, policies, data findings
+mock/                  # ✅ penny-console.html — clickable flow prototype
+challenges.html        # ✅ all 5 hackathon challenges, one page
+agent/                 # ⏳ the CMA definition — agent.yaml, skills/, mctools/
+app/                   # ⏳ Penny Console — FastAPI backend + frontend
 ```
 
 ## Getting started (peers)
