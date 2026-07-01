@@ -28,7 +28,13 @@ class MCPClient:
         content = res.get("content", [])
         text = content[0].get("text","[]") if content else "[]"
         parsed = json.loads(text) if text.strip().startswith(("[","{")) else text
-        # Server returns {"ok": true, "row_count": N, "rows": [...]} — unwrap
-        if isinstance(parsed, dict) and "rows" in parsed:
-            return parsed["rows"]
+        # Server returns {"ok": true, "row_count": N, "rows": [...]} — unwrap,
+        # but NEVER swallow a failure: an error shown to the agent is fixable
+        # (e.g. missing `world.` schema prefix); a silent [] reads as "no data".
+        if isinstance(parsed, dict):
+            if parsed.get("ok") is False or "error" in parsed:
+                return {"sql_error": parsed.get("error", parsed),
+                        "hint": "Tables live in the `world` schema — e.g. world.stores, world.fin_cash_counts."}
+            if "rows" in parsed:
+                return parsed["rows"]
         return parsed
