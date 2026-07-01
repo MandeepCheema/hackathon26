@@ -1,0 +1,185 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penny — Docs</title><style>
+:root{--bg:#0a0b10;--panel:#14161f;--line:#242838;--ink:#f2f4fa;--mut:#9aa1b4;--dim:#6b7186;--brand:#7c6cff;--brand2:#a897ff;--cash:#3ddc97;--leak:#ff6b5e;
+--serif:"Fraunces",Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;display:grid;grid-template-columns:290px 1fr}
+@media(max-width:860px){body{grid-template-columns:1fr}aside{display:none}}
+a{color:var(--brand2);text-decoration:none}a:hover{text-decoration:underline}
+aside{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);padding:26px 20px;background:#0c0e15}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;margin-bottom:8px;color:var(--ink)}
+.brand .m{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--leak));display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:#fff}
+aside .home{font-size:12.5px;color:var(--dim);margin-bottom:22px;display:block}
+aside nav{display:flex;flex-direction:column;gap:4px}
+aside nav a{display:block;padding:11px 13px;border-radius:10px;color:var(--ink);border:1px solid transparent}
+aside nav a:hover{background:var(--panel);border-color:var(--line);text-decoration:none}
+aside nav a b{display:block;font-size:14px}aside nav a span{display:block;font-size:11.5px;color:var(--dim);margin-top:3px;line-height:1.4}
+main{padding:56px 8vw;max-width:1000px}
+article{padding-bottom:60px;margin-bottom:40px;border-bottom:1px solid var(--line);scroll-margin-top:20px}
+.doc-h{margin-bottom:22px}.kx{font-family:var(--mono);font-size:12px;color:var(--brand2);letter-spacing:.1em}
+h1{font-family:var(--serif);font-weight:600;font-size:40px;letter-spacing:-.02em;margin:4px 0 0}
+h2{font-family:var(--serif);font-weight:600;font-size:27px;letter-spacing:-.01em;margin:34px 0 10px;padding-top:10px}
+h3{font-size:19px;margin:24px 0 8px}h4{font-size:15px;color:var(--mut);margin:18px 0 6px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
+p{margin:12px 0;color:#d7dbe6}ul,ol{margin:12px 0 12px 24px}li{margin:5px 0;color:#d7dbe6}
+code{font-family:var(--mono);font-size:.88em;background:#1c2030;color:var(--brand2);padding:2px 6px;border-radius:5px}
+pre{background:#0d1018;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;margin:14px 0}
+pre code{background:none;color:#cdd6f4;padding:0;font-size:12.5px;line-height:1.6}
+blockquote{border-left:3px solid var(--brand);background:rgba(124,108,255,.07);padding:10px 16px;border-radius:0 8px 8px 0;margin:14px 0;color:var(--mut)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left}th{background:var(--panel);color:var(--brand2);font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase}
+td{color:#d7dbe6}hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+strong{color:var(--ink)}
+</style></head><body>
+<aside>
+  <div class="brand"><span class="m">P</span> Penny</div>
+  <a class="home" href="index.html">← Back to penny.ai</a>
+  <nav><a href="#penny-design"><b>Design</b><span>The full design — decisions, integrity layer, corrected findings, scope.</span></a>
+<a href="#architecture"><b>Architecture</b><span>Planes + data flow. One brain, two runtimes.</span></a>
+<a href="#mcp-contract"><b>MCP Contract</b><span>The live tools + Penny action schemas + the rubric.</span></a>
+<a href="#policies"><b>Policies</b><span>fin_policy / policy_registry / fee schedule — the grounding.</span></a>
+<a href="#data-findings"><b>Data Findings</b><span>The world schema map + rubric-grounded leak inventory.</span></a>
+  <a href="../mock/penny-console.html"><b>Live Console ↗</b><span>Clickable flow prototype</span></a>
+  <a href="../docs/architecture.html"><b>Architecture (visual) ↗</b><span>The diagrams</span></a>
+  </nav>
+</aside>
+<main><article id="penny-design"><div class="doc-h"><span class="kx">penny-design.md</span><h1>Design</h1></div><h1>Penny — the Controls Copilot · Design (DRAFT)</h1>
+<blockquote>Status: <strong>draft / in progress.</strong> Architecture debated and converging; not yet locked.</blockquote>
+<blockquote>Companion: repo <code>README.md</code>. Client: McContext. Challenge: <code>Penny · Finance &amp; Controls</code>.</blockquote>
+<h2>Win conditions</h2>
+<p>Bench score is a <strong>floor</strong>, one input. <strong>Product + pitch + SLC + early-submit bonus</strong> decide it; top 7 pitch live. Differentiator = <strong>genuine judgment, shown</strong>. Design must: score on precision/recall, be a Simple/Lovable/Complete product a controller would buy, visibly prove there's an agent (not a cron job), and ship fast.</p>
+<h2>Design decisions (debated)</h2>
+<p><strong>1 · Agent topology → one agent + skills + deterministic tool sidecar.</strong></p>
+<p>Not multi-agent (CMA registers one agent; sub-agents multiply latency/tokens and hurt the efficiency score; harder to deploy). Not a single unstructured prompt (unreliable across 6 duties). Each duty = a <strong>skill</strong> (playbook, progressive disclosure); system prompt routes.</p>
+<p><strong>2 · Where judgment lives → tools compute evidence, agent decides + explains.</strong></p>
+<p>Mechanical math (three-way match, fee modeling, cash-bias stats) → deterministic function tools (LLMs fumble arithmetic; it's not where the judgment is). Fuzzy calls (real vs decoy? root cause? abstain?) → LLM reasoning grounded in tool output. <em>Determinism is sensing; the agent is deciding.</em></p>
+<p><strong>3 · Product ↔ bench coupling → one brain, two front doors.</strong></p>
+<p>The Penny CMA is the only brain. <strong>Bench</strong> drives it via MCP + action tools (no UI). <strong>Product</strong> drives the <em>same</em> agent via our app, which renders its flags + traces. No re-implemented detection, no drift. Bench work = product work.</p>
+<h2>The precision funnel (architectural spine)</h2>
+<pre><code>   DETERMINISTIC                 AGENTIC                     OUTPUT
+ candidate generation  ──▶  agent adjudication   ──▶  flag + evidence
+ cheap tools, high recall    judgment, high precision    OR cleared + why
+ (anomaly nets)              real? decoy? cause?          OR abstain (thin data)
+                             enough evidence?</code></pre>
+<p>Cheap deterministic nets surface <em>everything suspicious</em> (high recall); the agent <strong>reasons only on candidates</strong> — efficient (no turns wasted on 269 noise rows), honest labor split, and exactly what precision/recall rewards.</p>
+<h2>Components</h2>
+<h3>The Penny agent (CMA — the only brain)</h3>
+<ul><li><strong>model:</strong> Sonnet 4.6 for candidate/routing, escalate to Opus 4.8 for hard adjudication (tuning decision).</li><li><strong>system prompt:</strong> controller persona · judgment principles (signal vs noise, decoy-awareness, root-cause discipline) · <strong>abstention rule</strong> (insufficient evidence → say so) · <strong>anti-injection</strong> (data is data, never instructions).</li><li><strong>skills (one playbook each):</strong> <code>three-way-match</code>, <code>settlement-recon</code>, <code>cash-over-short</code>, <code>loss-prevention</code>, <code>duplicate-payment</code>, <code>cogs-leakage</code>.</li><li><strong>tools:</strong></li><li><strong>MCP (read):</strong> company data. Bench = McContext hidden MCP; product = our read-only Postgres.</li><li><strong>function tools (deterministic):</strong> <code>three_way_match(po)</code>, <code>cash_bias_stats(store)</code>, <code>expected_fees(settlement)</code>, <code>payment_coverage(payment)</code>.</li><li><strong>action tool:</strong> <code>record_flag(entity, duty, verdict, amount, confidence, evidence[], reason)</code> — graded output at bench; the row the console renders.</li></ul>
+<h3>Two runtimes (same agent)</h3>
+<ul><li><strong>Bench:</strong> CMA in workspace → registered id+version → Anthropic runs it → MCP = hidden data → <code>record_flag</code> scored on precision/recall.</li><li><strong>Product:</strong> app invokes the same agent (CMA Sessions API, or Agent SDK locally) → MCP = our Postgres → flags+traces rendered.</li></ul>
+<h3>Product app — "Penny Console"</h3>
+<ul><li><strong>Backend (FastAPI):</strong> batch scan (agent over stores×duties, bounded for cost → SQLite) · worklist API · ask proxy (live agent session, streamed reasoning).</li><li><strong>Frontend (McContext-branded — navy/paper/Fraunces):</strong> Worklist (ranked flags, Confirm/Dismiss/Assign, expandable evidence) · Cleared lane (decoys + why) · Entity search + filter chips · Ask box (live investigation) · hero metric ($ recovered, false-alarms avoided).</li></ul>
+<h2>How it runs for consumers</h2>
+<ul><li><strong>Morning triage (worklist):</strong> overnight scan → ~3 real leaks ranked by $ with evidence → Confirm (→ case/assign) / Dismiss (→ feedback); Cleared lane reassures ("362 checked, here's why they're fine").</li><li><strong>Ad-hoc (ask):</strong> "Was the $420 sup_bev payment on Jun 8 a duplicate?" → agent chains tools live, weighs coverage, answers <em>with reasoning</em>. ← demo money-shot.</li><li><strong>Lookup (search/filter):</strong> entity id or duty/$ filter → known-item retrieval over produced flags. Plumbing, not headline.</li><li>Confirmed leaks export to a case/ticket → closes the loop for a real ops team.</li></ul>
+<h2>The real MCP contract (discovered live — <code>mccontext-company-systems</code> v1.28.1)</h2>
+<ul><li><strong>Read/investigate:</strong> <code>run_sql(query, purpose)</code> — read-only SELECT/WITH. Only investigation tool; the deterministic "sidecar" = SQL the agent composes/runs.</li><li><strong>Penny action tools (graded outputs):</strong> <code>submit_cash_variance</code>, <code>submit_duplicate_payment</code>, <code>submit_match_exception</code>, <code>submit_loss_flag</code>, <code>submit_cogs_variance</code>, <code>submit_settlement</code>. Each has a <strong>status enum</strong> + explicit <strong>"do NOT flag" clause</strong> — the tool descriptions ARE the rubric.</li><li><strong>Clearing a decoy is an explicit action</strong> — e.g. <code>submit_loss_flag(risk_level=clear)</code>, <code>submit_cogs_variance(status=within_tolerance)</code>. Precision is scored by submitting the <em>right status</em>.</li><li>Other challenges confirm mapping: Patty→<code>issue_credit</code>/<code>issue_refund</code>/<code>escalate</code>/<code>create_ticket</code>; Stock→<code>submit_variance</code>/<code>submit_forecast</code>/<code>submit_reorder</code>/<code>submit_markdown</code>; Pivot→<code>submit_answer</code>/<code>submit_report</code>.</li></ul>
+<h2>Integrity layer (Policy &amp; Guardrail plane) — closes the agentic gaps</h2>
+<table><thead><tr><th>Gap</th><th>Closure</th></tr></thead><tbody><tr><td>Policy Engine</td><td><code>get_policy(topic, as_of)</code> over <code>fin_policy</code> + <code>policy_registry</code>, <strong>active + effective-dated only</strong>; bands feed thresholds; verdicts cite policy id; never uses retired policy.</td></tr><tr><td>Input guardrail</td><td><code>run_sql</code> output + note/description = <strong>data, not instructions</strong> (anti-injection).</td></tr><tr><td>Action guardrail</td><td>confidence gate · spend cap→escalate · irreversible money→human approval · never violate a tool's "do NOT flag".</td></tr><tr><td>Tool guardrail</td><td>read-only enforce · action allowlist per duty · turn/token cap.</td></tr><tr><td>Abstention</td><td>thin/conflicting evidence → submit clear/within_tolerance/balanced or decline; never fabricate.</td></tr><tr><td>Decision memory</td><td>ledger (entity+duty+period): dedup, don't re-flag dismissed.</td></tr><tr><td>Feedback loop</td><td>confirm/dismiss/approve → learned exclusions + threshold tuning.</td></tr><tr><td>Eval harness</td><td>generator ground-truth → precision/recall/F1 per duty; <strong>gate: offline F1 ≥ target before spending a bench life</strong>; regression fixtures.</td></tr><tr><td>Cost governor</td><td>candidate-net-first · turn/token cap · model tiering · track vs $50.</td></tr><tr><td>Confidence calibration</td><td>0–1 → autonomy tier; money/accusation always human; calibrated on eval.</td></tr></tbody></table>
+<h2>Corrected data findings (rubric-grounded — earlier probes were naive)</h2>
+<ul><li><strong>Cash:</strong> <code>expected = cash_sales − paid_outs</code>; flag only <strong>persistent directional short</strong>. Real = <strong>str_009 (−$610, t=−3.8)</strong> and <strong>str_003 (−$569, t=−3.8)</strong>. Single-day/noise cleared. (Earlier "$1,854/5 stores" was inflated.)</li><li><strong>Settlement:</strong> modeling <code>expected_fee</code> (MDR bps + per-txn) → <strong>10 store-days, $1,455 gap</strong> (was $0 naively).</li><li><strong>Loss prevention:</strong> <code>stf_009_6</code> @ str_009 = 0.61 void rate vs 0.17 peer — <strong>corroborates the str_009 cash short → refer_investigation</strong>. str_004's high-void cluster = <strong>store-wide (POS) decoy → clear/monitor</strong>.</li><li><strong>Duplicate payment:</strong> 0 real in visible data; 55 look-alikes are legit recurring → real dups only in hidden bench cases. Best as the <strong>decoy/precision showcase</strong>, not a "$ caught" story.</li></ul>
+<h2>Scope — LOCKED</h2>
+<p><strong>v1 (build first): <code>cash-over-short</code> + <code>loss-prevention</code>.</strong> The corroborating pair — <code>str_009</code> carries both a persistent cash short and a high-void cashier (<code>stf_009_6</code>), so v1 demonstrates chained cross-duty reasoning + the decoy discipline (<code>str_004</code> store-wide voids cleared). Real visible signal; strongest agentic demo.</p>
+<p><strong>v1 action tools:</strong> <code>submit_cash_variance</code>, <code>submit_loss_flag</code> (incl. <code>clear</code>/<code>balanced</code> for decoys).</p>
+<p><strong>v1 read:</strong> <code>run_sql</code>. <strong>v1 policy:</strong> none binding for these two, but the guardrail/abstention/peer-baseline logic applies.</p>
+<p><strong>Fast-follow (v2):</strong> <code>duplicate-payment</code> (decoy showcase), <code>settlement</code> ($1,455, needs fee model), <code>three-way-match</code> (7 policy-aware, needs <code>fin_policy</code>), <code>cogs-leakage</code>.</p>
+<p>Each duty ships the full bundle: skill (tool def + policy + decoy exclusions) + candidate-net SQL + eval fixtures.</p>
+<h2>Open items</h2>
+<ul><li>Model tiering (single Opus vs Sonnet+Opus escalation) — measure on eval + bench.</li><li>Confidence→tier thresholds — calibrate on the eval set.</li><li>Batch-scan cost envelope vs the $50 usage budget.</li></ul></article>
+<article id="architecture"><div class="doc-h"><span class="kx">architecture.md</span><h1>Architecture</h1></div><h1>Penny — architecture &amp; data flow</h1>
+<blockquote>Markdown mirror of <a href="architecture.html"><code>architecture.html</code></a> (open the HTML for the visual). One agent brain, two runtimes; a transaction generator feeds the product demo; executed actions land as notifications on the recipient's screen.</blockquote>
+<h2>System architecture — planes</h2>
+<pre><code>GENERATION (product/demo only)
+  Transaction Generator ── synth payments/registers/invoices/POs + injectable leaks &amp; decoys
+        │ writes
+        ▼
+DATA
+  World Store (Postgres, world.*)  ·  MCP Server (run_sql read + submit_* actions)
+        │ read tools ▲ action tools
+        ▼
+AGENT — the only brain (Claude Managed Agent; identical in product &amp; bench)
+  Penny Agent: model + system (judgment/abstention/anti-injection) + per-duty skills
+  Deterministic sidecar: candidate nets + math (via run_sql)
+  Adjudication + action selection (graduated autonomy)
+        │ candidate verdicts (before any action)
+        ▼
+POLICY &amp; GUARDRAIL — integrity layer
+  Policy Engine (fin_policy/policy_registry, version+effective-date aware; verdicts cite policy id)
+  Guardrails (input anti-injection · action spend-cap/approval · tool read-only · abstain)
+  Decision Memory + Feedback (dedup, never re-flag dismissed, learn from human)
+  Confidence calibration → autonomy tier
+        │ policy-cleared, guardrailed submit_* calls + trace
+        ▼
+APPLICATION (product only, FastAPI + SQLite)
+  Scan Orchestrator · Action Executor (artifacts + guardrail gate) · App DB (audit) · Notification Service
+        │ serves
+        ▼
+PRESENTATION (product only)
+  Controller Console (worklist · cleared · actions · ask)
+  Recipient screens 🔔 (Regional Manager · Supplier · AP) — where executed actions show up</code></pre>
+<p><strong>Bench runtime (parallel, graded):</strong> same agent, data = McContext hidden MCP, no generator/UI. A simulator drives cases → agent calls typed <code>submit_*</code> tools → judge scores trace + outcome. <strong>Product work = bench work.</strong></p>
+<p><strong>Dev-time harness (neither runtime):</strong> Eval harness (generator ground-truth → precision/recall/F1; gate a bench life on offline F1 ≥ target) + Cost governor (candidate-net-first, turn/token cap, model tiering; keep scans inside $50).</p>
+<h2>Data flow — product runtime</h2>
+<ol><li>Generator emits txns/events (+ injected leaks/decoys) → World Store.</li><li>Scan fires (Scan-now / schedule / new-batch) → Orchestrator.</li><li>Orchestrator invokes Penny; it reads via MCP <code>run_sql</code>.</li><li>Candidate nets (deterministic) surface everything suspicious — high recall.</li><li>Adjudication (judgment) reasons only on candidates: real vs decoy, root cause, abstain — high precision.</li><li>Policy &amp; guardrail check → agent calls a typed <code>submit_*</code> under graduated autonomy.</li><li>Action Executor gates (auto / 1-click / approval), produces artifact, writes audit log.</li><li>Notification Service pushes to recipient screen 🔔 + console toast.</li><li>Controller triages (confirm/dismiss/approve) → feedback loops to the ledger.</li></ol>
+<h2>Data flow — bench runtime</h2>
+<ol><li>Harness starts a session with registered agent id + version (3 lives).</li><li>Simulator presents hidden cases; agent investigates via McContext MCP <code>run_sql</code>.</li><li>Same funnel: candidate nets → adjudication → verdict/abstain.</li><li>Agent records outcome via <code>submit_*</code> action tools — <strong>this is the graded result</strong>.</li><li>Judge scores trace + outcome (precision, recall, judgment, security, efficiency, communication).</li></ol>
+<pre><code></code></pre></article>
+<article id="mcp-contract"><div class="doc-h"><span class="kx">mcp-contract.md</span><h1>MCP Contract</h1></div><h1>McContext MCP — tool contract &amp; rubric</h1>
+<blockquote>Server: <code>mccontext-company-systems</code> v1.28.1 · endpoint in <code>.env</code> (<code>MCCTX_MCP_URL</code> + <code>MCP_AUTH_TOKEN</code>).</blockquote>
+<blockquote>Discovered live via <code>tools/list</code>. <strong>The tool descriptions ARE the scoring rubric</strong> — each names exactly what to flag and what NOT to (the decoys).</blockquote>
+<h2>All 17 tools</h2>
+<p><strong>Investigate (read):</strong></p>
+<ul><li><code>run_sql(query, purpose)</code> — READ-ONLY <code>SELECT</code>/<code>WITH</code> against the <code>world.*</code> schema. The only read tool; explore schema via <code>information_schema</code>.</li></ul>
+<p><strong>Penny · Finance &amp; Controls (action = graded output):</strong></p>
+<ul><li><code>submit_cash_variance</code> · <code>submit_duplicate_payment</code> · <code>submit_match_exception</code> · <code>submit_loss_flag</code> · <code>submit_cogs_variance</code> · <code>submit_settlement</code></li></ul>
+<p><strong>Patty · Support:</strong> <code>issue_credit</code> · <code>issue_refund</code> · <code>escalate</code> · <code>create_ticket</code></p>
+<p><strong>Stock · Inventory:</strong> <code>submit_variance</code> · <code>submit_forecast</code> · <code>submit_reorder</code> · <code>submit_markdown</code></p>
+<p><strong>Pivot · Analyst:</strong> <code>submit_answer</code> · <code>submit_report</code></p>
+<h2>Penny action-tool schemas (\* = required)</h2>
+<h3><code>submit_cash_variance</code></h3>
+<blockquote>Flag a cash over/short for a store-day (or a persistent pattern). <code>expected_cash = cash sales − logged paid-outs</code>. <strong>Do NOT flag normal single-day variance or a short explained by a logged paid-out / change order; the real signal is a persistent directional short</strong> (use <code>business_date='pattern'</code>).</blockquote>
+<ul><li><code><em>store_id</code> · <code></em>business_date</code> · <code>*status</code> ∈ <code>{balanced, short, over, pattern_short}</code> · <code>expected_cash_cents</code> · <code>counted_cash_cents</code> · <code>variance_cents</code> · <code>note</code></li></ul>
+<h3><code>submit_duplicate_payment</code></h3>
+<blockquote>Flag a duplicate payment: <code>invoice_id</code> paid again for goods already covered by <code>duplicate_of_invoice_id</code>. <strong>Do NOT flag legitimate recurring charges (distinct periods) or a re-issued invoice whose original was voided/credited.</strong></blockquote>
+<ul><li><code><em>supplier_id</code> · <code></em>invoice_id</code> · <code><em>duplicate_of_invoice_id</code> · <code></em>amount_cents</code> · <code>note</code></li></ul>
+<h3><code>submit_match_exception</code></h3>
+<blockquote>Three-way-match exception on a PO line (ordered vs received vs billed). <code>amount_cents = recoverable error</code>. <strong>Do NOT flag lines that reconcile within the materiality threshold or are explained (contracted price, credit memo).</strong></blockquote>
+<ul><li><code><em>po_id</code> · <code></em>po_line_id</code> · <code><em>exception_type</code> ∈ <code>{price_variance, over_billed_qty, short_received, duplicate_invoice, unauthorized_charge, tax_miscalc}</code> · <code></em>amount_cents</code> · <code>note</code></li></ul>
+<h3><code>submit_loss_flag</code></h3>
+<blockquote>Flag a cashier for loss prevention (submit only non-clear). <strong>Compare against the peer baseline; do NOT refer honest outliers (trainees, managers, store-wide POS-outage spikes).</strong></blockquote>
+<ul><li><code><em>staff_id</code> · <code></em>store_id</code> · <code><em>risk_level</code> ∈ <code>{refer_investigation, monitor, clear}</code> · <code></em>primary_signal</code> ∈ <code>{void_rate, refund_to_card, no_sale_opens, discount_abuse, refund_no_sale}</code> · <code>evidence_note</code></li></ul>
+<h3><code>submit_cogs_variance</code></h3>
+<blockquote>COGS / margin-leakage verdict for a store-period. <code>theoretical_cents = revenue × target food-cost %</code>. <strong>Flag leakage only when materially over target and unexplained by contracted prices.</strong></blockquote>
+<ul><li><code><em>store_id</code> · <code></em>period</code> · <code>*status</code> ∈ <code>{within_tolerance, leakage, favorable}</code> · <code>theoretical_cents</code> · <code>actual_cents</code> · <code>variance_pct</code> · <code>note</code></li></ul>
+<h3><code>submit_settlement</code></h3>
+<blockquote>Settlement reconciliation for one store-day. For a real shortfall, <code>missing_cents = unexplained gap AFTER expected processor fee and any logged refund/chargeback/timing</code>. <strong>Submit only days that don't reconcile.</strong></blockquote>
+<ul><li><code><em>store_id</code> · <code></em>business_date</code> · <code>*status</code> ∈ <code>{reconciled, shortfall, over_deposit, timing_pending}</code> · <code>register_card_cents</code> · <code>expected_fee_cents</code> · <code>deposit_cents</code> · <code>missing_cents</code> · <code>note</code></li></ul>
+<h2>Design implications</h2>
+<ul><li>Read = <code>run_sql</code>; the "deterministic sidecar" is SQL the agent composes/runs.</li><li><strong>Clearing a decoy is an explicit action</strong> (<code>risk_level=clear</code>, <code>status=within_tolerance</code>/<code>balanced</code>) — precision is scored by submitting the <em>right status</em>, not by silence.</li><li>Every skill = { the tool's definition + the governing policy (see <a href="policies.md">policies.md</a>) + the named decoy exclusions }.</li></ul></article>
+<article id="policies"><div class="doc-h"><span class="kx">policies.md</span><h1>Policies</h1></div><h1>McContext policies (the grounding for every verdict)</h1>
+<blockquote>Source tables: <code>world.fin_policy</code>, <code>world.policy_registry</code>, <code>world.fin_fee_schedule</code>.</blockquote>
+<blockquote><strong>The agent must read these, cite them, and use only the ACTIVE, effective-dated version.</strong> A no-policy agent cries wolf (flags within-tolerance lines) or over-refunds (uses a retired policy) → zeroed.</blockquote>
+<h2><code>fin_policy</code> — finance thresholds (Penny)</h2>
+<table><thead><tr><th>id</th><th>topic</th><th>rule</th></tr></thead><tbody><tr><td><code>finpol_materiality</code></td><td>materiality</td><td>Don't raise a 3-way exception for a variance <strong>under $5.00 AND under 0.5% of the line</strong> — both must hold. Genuine price/qty/duplicate/unauthorized/tax errors above this MUST be flagged.</td></tr><tr><td><code>finpol_pricetol</code></td><td>price_tolerance</td><td>A billed unit price <strong>within 0.5% of contracted price</strong> is within tolerance and NOT a price-variance exception — even if the absolute diff exceeds the $5 floor. Flag only if it exceeds BOTH materiality AND tolerance.</td></tr><tr><td><code>finpol_foodcost</code></td><td>cogs_target</td><td>Expected food cost ≈ <strong>30%</strong> of net sales. A store-period <strong>over 34%</strong> with no contracted-price / mix explanation is leakage to investigate; <strong>under 28%</strong> is favorable.</td></tr></tbody></table>
+<p><strong>Effect (measured):</strong> naive three-way match flags 11 lines; policy-aware (materiality + tolerance) → <strong>7 real, ~$376</strong>; the other 4 are within tolerance = false positives.</p>
+<h2><code>policy_registry</code> — versioned, effective-dated (mostly Patty; a version trap)</h2>
+<table><thead><tr><th>id</th><th>topic</th><th>status</th><th>rule</th></tr></thead><tbody><tr><td><code>pol_refund_v2</code></td><td>refund</td><td><strong>RETIRED</strong> (to 2025-09-01)</td><td>issue FULL REFUND to original payment. ⚠️ using this over-refunds.</td></tr><tr><td><code>pol_refund_v3</code></td><td>refund</td><td><strong>ACTIVE</strong> (from 2025-09-01)</td><td>Missing item: STORE CREDIT = item menu price only (no tax). Wrong order: credit = pre-tax subtotal. Tips non-refundable. <strong>7-day window. Tier-1 may issue ≤ $25; above → escalate to tier2.</strong></td></tr><tr><td><code>pol_outage_v1</code></td><td>outage_sla</td><td><strong>RETIRED</strong></td><td>FULL REFUND for any affected order.</td></tr><tr><td><code>pol_outage_v2</code></td><td>outage_sla</td><td><strong>ACTIVE</strong></td><td>Only if a DELIVERY order placed WITHIN a declared delivery-outage window AND delivery fails → STORE CREDIT = pre-tax subtotal (tax/fees/tips excluded). Not otherwise.</td></tr></tbody></table>
+<p>(17 rows total; resolve by <code>status='active' AND effective_date &lt;= as_of</code>, newest wins.)</p>
+<h2><code>fin_fee_schedule</code> — processor fees (Penny settlement)</h2>
+<table><thead><tr><th>processor</th><th>card_type</th><th>mdr_bps</th><th>per_txn_fee_cents</th></tr></thead><tbody><tr><td>cardnet</td><td>credit</td><td>180</td><td>10</td></tr><tr><td>cardnet</td><td>debit</td><td>90</td><td>10</td></tr><tr><td>cardnet</td><td>amex</td><td>250</td><td>0</td></tr></tbody></table>
+<p><code>expected_fee = Σ_cardtype( gross_cents × mdr_bps/10000 + txn_count × per_txn_fee_cents )</code>.</p>
+<p>Settlement <code>missing = register_card − expected_fee − net_deposit</code>, after logged adjustments.</p>
+<h2>Rule of thumb for the agent</h2>
+<p>Every flag/clear must be defensible as: <strong>"per policy <code>&lt;id&gt;</code>, this variance is / isn't an exception because …"</strong>.</p></article>
+<article id="data-findings"><div class="doc-h"><span class="kx">data-findings.md</span><h1>Data Findings</h1></div><h1>Data findings — the <code>world</code> schema &amp; Penny's real leak inventory</h1>
+<blockquote>Read-only Postgres, <code>world.*</code> schema (44 tables). Connect via <code>WORLD_PG_URI</code> in <code>.env</code>.</blockquote>
+<blockquote>All figures <strong>rubric-grounded</strong> (see <a href="mcp-contract.md">mcp-contract.md</a>, <a href="policies.md">policies.md</a>). Dev subset = 10 stores, ~182 days (Dec 2025 – Jun 2026).</blockquote>
+<h2>Schema by domain</h2>
+<ul><li><strong>Support (Patty):</strong> <code>customers</code>, <code>orders</code>, <code>order_items</code>, <code>payments</code>, <code>tickets</code>, <code>incidents</code>, <code>refunds_credits</code>, <code>loyalty_accounts</code>, <code>loyalty_ledger</code>, <code>gift_cards</code>, <code>fraud_flags</code>, <code>policy_registry</code>, <code>menu_items</code>, <code>catering_orders</code>, <code>deliveries</code></li><li><strong>Finance (Penny):</strong> <code>fin_purchase_orders</code>, <code>fin_po_lines</code>, <code>fin_goods_receipts</code>, <code>fin_invoices</code>, <code>fin_invoice_lines</code>, <code>fin_payments_out</code>, <code>fin_credit_memos</code>, <code>fin_register_totals</code>, <code>fin_register_txns</code>, <code>fin_card_mix</code>, <code>fin_bank_settlements</code>, <code>fin_settlement_adjustments</code>, <code>fin_cash_counts</code>, <code>fin_paid_outs</code>, <code>fin_fee_schedule</code>, <code>fin_price_list</code>, <code>fin_policy</code>, <code>fin_suppliers</code>, <code>fin_staff</code></li><li><strong>Inventory (Stock):</strong> <code>inv_skus</code>, <code>inv_recipes</code>, <code>inv_counts</code>, <code>inv_receipts</code>, <code>inv_sales_daily</code>, <code>inv_usage_daily</code>, <code>inv_waste_logs</code>, <code>inv_shift_logs</code></li><li><strong>Shared:</strong> <code>stores</code>, <code>world_meta</code></li></ul>
+<h2>Penny leak inventory (visible data — the real signal)</h2>
+<table><thead><tr><th>Duty</th><th>Real finding</th><th>Decoy (do NOT flag)</th></tr></thead><tbody><tr><td><strong>Cash over/short</strong></td><td><code>str_009</code> −$610 (t=−3.8), <code>str_003</code> −$569 (t=−3.8) → <code>pattern_short</code>. <code>expected = cash_sales − paid_outs</code>.</td><td>Single-day one-offs; sub-$5 noise (269 store-days); <code>str_001</code> +$27 <em>over</em>.</td></tr><tr><td><strong>Loss prevention</strong></td><td><code>stf_009_6</code> @ str_009 = 0.61 void rate vs 0.17 peer → <code>refer_investigation</code>; <strong>corroborates str_009 cash short</strong>.</td><td><code>str_004</code> high-void <em>cluster</em> = store-wide (POS) → <code>clear</code>/<code>monitor</code>.</td></tr><tr><td><strong>Settlement</strong></td><td>10 store-days, <strong>$1,455</strong> unreconciled after modeling fees.</td><td>Gaps that are just processor fees / timing.</td></tr><tr><td><strong>Three-way match</strong></td><td>7 policy-aware exceptions, <strong>~$376</strong>.</td><td>4 lines within materiality/tolerance.</td></tr><tr><td><strong>Duplicate payment</strong></td><td><strong>0</strong> in visible data (0 po-lines double-billed, 0 invoices paid twice).</td><td>55 recurring same-amount payments (distinct invoices, weekly cadence). Real dups only in hidden bench cases.</td></tr><tr><td><strong>COGS leakage</strong></td><td>compute revenue×30% vs actual purchasing; flag store-periods &gt;34% unexplained.</td><td>28–34% band = within tolerance.</td></tr></tbody></table>
+<h2>Method notes (traps we hit)</h2>
+<ul><li>Cash expected must subtract <code>fin_paid_outs</code> and flag only <strong>persistent directional</strong> shorts — not single-day variance.</li><li>Settlement gaps must net out <code>expected_fee</code> (from <code>fin_fee_schedule</code>) + logged adjustments before flagging.</li><li>Loss prevention must compare to a <strong>peer baseline</strong> and exclude store-wide spikes (POS outage) and trainees/managers.</li><li>Three-way match must apply <strong>materiality + price-tolerance</strong> (policy) before flagging.</li><li>"Same supplier + same amount, many times" is the recurring-payment <strong>decoy</strong>, not a duplicate.</li></ul>
+<h2>Demo spine (why Cash + Loss-Prevention lead)</h2>
+<p><code>str_009</code> carries <strong>both</strong> a persistent cash short <strong>and</strong> a high-void cashier → Penny chains them into one investigative referral, while clearing <code>str_004</code>'s store-wide voids. Chained, judgment-heavy, real — the strongest proof it's an agent, not a rule.</p></article>
+<p style="color:var(--dim);font-family:var(--mono);font-size:12px;margin-top:20px">Generated from repo markdown by site/build_docs.py · Atlan AI Hackathon 2026</p>
+</main></body></html>
