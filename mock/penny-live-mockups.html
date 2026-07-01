@@ -42,6 +42,8 @@ button{font-family:inherit}
 .brand small{display:block;font-family:var(--body);font-weight:500;font-size:11px;color:var(--mc-pink-light);letter-spacing:.08em;text-transform:uppercase;margin-top:-2px}
 .live{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(255,90,138,.22);border:1px solid rgba(255,127,166,.5);border-radius:var(--radius-pill);padding:6px 14px}
 .pulse{width:8px;height:8px;border-radius:50%;background:var(--mc-pink-light)}
+.clock{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.8);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.clock b{color:#fff;font-weight:600}
 @media (prefers-reduced-motion: no-preference){.pulse{animation:pulse 1.6s ease-in-out infinite}}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,127,166,.55)}50%{opacity:.55;box-shadow:0 0 0 5px rgba(255,127,166,0)}}
 .who{font-size:12.5px;color:rgba(255,255,255,.75)} .who b{color:#fff}
@@ -82,8 +84,9 @@ button{font-family:inherit}
 /* ── shared feed rows ── */
 .feed{display:flex;flex-direction:column;gap:8px}
 .row{display:flex;align-items:center;gap:12px;background:#fff;border-left:4px solid var(--mc-line);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow-card);transition:border-color .3s,background .3s}
-.row .t{font-family:var(--mono);font-size:11px;color:var(--mc-muted);width:52px}
-.row .st{font-family:var(--mono);font-size:12px;color:var(--mc-deep-blue);width:64px;font-weight:600}
+.row .t{font-family:var(--mono);font-size:11px;color:var(--mc-muted);width:66px;font-variant-numeric:tabular-nums}
+.row .st{font-size:12px;color:var(--mc-deep-blue);width:118px;font-weight:600;line-height:1.25}
+.row .st small{display:block;font-family:var(--mono);font-size:9.5px;color:var(--mc-muted);font-weight:400}
 .row .ty{font-size:12.5px;color:var(--mc-muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row .am{font-family:var(--display);font-size:15px;font-weight:700;color:var(--mc-deep-blue);font-variant-numeric:tabular-nums}
 .row .pill{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:var(--radius-pill);background:var(--mc-cream-warm);color:var(--mc-muted);white-space:nowrap}
@@ -133,6 +136,7 @@ button{font-family:inherit}
 .panel{background:#fff;border-radius:var(--radius-card);padding:16px;box-shadow:var(--shadow-card)}
 .optape{font-family:var(--mono);font-size:11.5px;display:flex;flex-direction:column;gap:3px;max-height:540px}
 .optape .oln{display:flex;gap:8px;padding:4px 7px;border-radius:6px;color:var(--mc-muted)}
+.optape .oln .ot{color:#B9BEC7;font-variant-numeric:tabular-nums}
 .optape .oln .os{color:var(--mc-deep-blue);font-weight:600} .optape .oln .oa{margin-left:auto;color:var(--mc-ink);font-variant-numeric:tabular-nums}
 .optape .oln.cand{background:var(--inv-bg);color:var(--mc-accent-blue)}
 .optape .oln.flagged{background:var(--flag-bg);color:var(--flag)}
@@ -178,6 +182,7 @@ button{font-family:inherit}
   <div class="logo">P</div>
   <div class="brand">Penny<span class="accent">.</span><small>Controls Copilot · McContext Finance</small></div>
   <div class="live"><span class="pulse"></span> streaming</div>
+  <div class="clock" id="clock"></div>
   <div class="who"><b>R. Alvarez</b> · Controller</div>
 </div></div>
 
@@ -295,12 +300,19 @@ const RECIP={'Loss-Prevention':'Regional Mgr · Midwest','Accounts Payable':'AP 
 const TIERNAME=['auto','1-click','approval'];
 
 const STORES=Array.from({length:10},(_,i)=>'str_'+String(i+1).padStart(3,'0'));
+// McContext is Chicago since 1972 — branches are Chicago neighbourhoods
+const BRANCHES={str_001:'The Loop',str_002:'Wicker Park',str_003:'Lincoln Park',str_004:'Logan Square',
+  str_005:'Hyde Park',str_006:'River North',str_007:'Pilsen',str_008:'Lakeview',str_009:'West Loop',str_010:'Old Town'};
+const branchOf=s=>BRANCHES[s]||s;
+// real wall-clock timestamps — this feed is live
+const fmtTime=d=>d.toTimeString().slice(0,8);
+const fmtDate=d=>d.toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+function tickClock(){const n=new Date();const c=$('clock');if(c)c.innerHTML=`${fmtDate(n)} · <b>${fmtTime(n)}</b>`;}
+tickClock();setInterval(tickClock,1000);
 const TX=[['sale',60],['card sale',22],['cash sale',10],['refund',4],['void',3],['no_sale',1]];
 function pickType(){let r=Math.random()*100,a=0;for(const[t,w]of TX){a+=w;if(r<a)return t}return 'sale';}
 function makeTx(){const type=pickType();const amt=type==='no_sale'?0:800+Math.floor(Math.random()*2700);
-  return {id:uid(),store:STORES[Math.floor(Math.random()*10)],type,amt,ts:clock(),status:'normal',cand:false};}
-let simMin=9*60;
-function clock(){simMin+=Math.floor(1+Math.random()*3);if(simMin>=21*60)simMin=9*60;const h=Math.floor(simMin/60),m=simMin%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+  return {id:uid(),store:STORES[Math.floor(Math.random()*10)],type,amt,ts:fmtTime(new Date()),status:'normal',cand:false};}
 
 // ---- authoritative state (for snapshot on layout switch) ----
 const state={scanned:0,flagged:0,cleared:0,inv:0,exposure:0,feed:[],flags:[],clears:[],routed:[]};
@@ -333,9 +345,10 @@ const TapeView={
     state.routed.slice().reverse().forEach(c=>this.addRoute(c,true));},
   row(t){const d=document.createElement('div');d.className='row enter'+this.cls(t);d.dataset.id=t.id;d.innerHTML=this.inner(t);return d;},
   cls(t){return t.status==='investigating'?' investigating':t.status==='flagged'?' flagged':t.status==='cleared'?' cleared':t.cand?' cand':'';},
-  inner(t){if(t.cand){const c=t.case;const lbl=t.status==='investigating'?'<span class="dots">investigating</span>':t.status==='flagged'?'FLAG':t.status==='cleared'?'cleared':'candidate';
-      return `<div class="t">${t.ts}</div><div class="st">${c.store}</div><div class="ty">${c.title} · <span style="color:var(--mc-muted)">${c.duty}</span></div><div class="pill">${lbl}</div>`;}
-    return `<div class="t">${t.ts}</div><div class="st">${t.store}</div><div class="ty">${t.type}</div><div class="am">${t.amt?money(t.amt):'—'}</div>`;},
+  inner(t){const stCell=s=>BRANCHES[s]?`<div class="st">${BRANCHES[s]}<small>${s}</small></div>`:`<div class="st">${s}</div>`;
+    if(t.cand){const c=t.case;const lbl=t.status==='investigating'?'<span class="dots">investigating</span>':t.status==='flagged'?'FLAG':t.status==='cleared'?'cleared':'candidate';
+      return `<div class="t">${t.ts}</div>${stCell(c.store)}<div class="ty">${c.title} · <span style="color:var(--mc-muted)">${c.duty}</span></div><div class="pill">${lbl}</div>`;}
+    return `<div class="t">${t.ts}</div>${stCell(t.store)}<div class="ty">${t.type}</div><div class="am">${t.amt?money(t.amt):'—'}</div>`;},
   lane(L){const d=document.createElement('div');d.className='lane';d.dataset.lane=L;
     d.innerHTML=`<div class="lh">${L} <span class="n" data-n="${L}">0</span></div><div class="empty">nothing routed</div>`;return d;},
   on(e){if(e.type==='tx'){const feed=$('tape-feed');feed.prepend(this.row(e.tx));while(feed.children.length>20)feed.lastChild.remove();}
@@ -345,7 +358,7 @@ const TapeView={
   addRoute(card,snap){const lane=$('tape-rail').querySelector(`[data-lane="${card.route}"]`);if(!lane)return;
     const em=lane.querySelector('.empty');if(em)em.remove();
     const el=document.createElement('div');el.className='rcard'+(snap?'':' enter');
-    el.innerHTML=`<div class="rt">${card.c.title}</div><div class="rm">${card.c.amount?money0(card.c.amount)+' · ':''}→ ${RECIP[card.route]} <span class="tier t${card.c.tier}">${TIERNAME[card.c.tier]}</span></div>`;
+    el.innerHTML=`<div class="rt">${card.c.title}</div><div class="rm">${card.ts?card.ts+' · ':''}${card.c.amount?money0(card.c.amount)+' · ':''}→ ${RECIP[card.route]} <span class="tier t${card.c.tier}">${TIERNAME[card.c.tier]}</span></div>`;
     lane.appendChild(el);const n=lane.querySelector(`[data-n="${card.route}"]`);n.textContent=+n.textContent+1;}
 };
 
@@ -358,7 +371,7 @@ const FunnelView={
     state.clears.slice().reverse().forEach(f=>c.clr.prepend(this.card(f.c,'clr')));
     this.counts();},
   raw(t){const d=document.createElement('div');d.className='fchip raw enter';
-    d.innerHTML=`<div class="fh"><div class="ft">${t.store} · ${t.type}</div><div class="fa">${t.amt?money(t.amt):'—'}</div></div>`;return d;},
+    d.innerHTML=`<div class="fh"><div class="ft">${branchOf(t.store)} · ${t.type}</div><div class="fa">${t.amt?money(t.amt):'—'}</div></div><div class="fs">${t.ts} · ${t.store}</div>`;return d;},
   card(c,kind){const d=document.createElement('div');d.className='fchip '+kind+' enter';d.dataset.id=c._id||'';
     d.innerHTML=`<div class="fh"><div class="ft">${c.title}</div>${c.amount?`<div class="fa">${money0(c.amount)}</div>`:''}</div>
       <div class="fs">${c.duty} · ${c.pill}</div><ul class="microtrace">${traceHTML(c.trace)}</ul>`;return d;},
@@ -382,7 +395,9 @@ const OpsView={
     if(!last)$('op-inv').innerHTML='<div class="invidle">Waiting for the next candidate to adjudicate…</div>';},
   oln(t){const d=document.createElement('div');const cls=t.status==='flagged'?' flagged':t.status==='cleared'?' cleared':t.cand?' cand':'';
     d.className='oln enter'+cls;d.dataset.id=t.id;
-    d.innerHTML=t.cand?`<span class="os">${t.case.store}</span><span>${t.case.duty}</span>`:`<span class="os">${t.store}</span><span>${t.type}</span><span class="oa">${t.amt?money(t.amt):'—'}</span>`;
+    const tt=`<span class="ot">${t.ts.slice(3)}</span>`; // mm:ss — dense tape
+    d.innerHTML=t.cand?`${tt}<span class="os" title="${t.case.store}">${branchOf(t.case.store)}</span><span>${t.case.duty}</span>`
+      :`${tt}<span class="os" title="${t.store}">${branchOf(t.store)}</span><span>${t.type}</span><span class="oa">${t.amt?money(t.amt):'—'}</span>`;
     return d;},
   on(e){if(e.type==='tx'){const tp=$('op-tape');tp.prepend(this.oln(e.tx));while(tp.children.length>26)tp.lastChild.remove();}
     else if(e.type==='inv'){const c=state.feed.find(x=>x.id===e.id).case;this.showCase(c,e.id);}
@@ -390,16 +405,16 @@ const OpsView={
       if(r)r.className='oln '+(e.verdict==='flag'?'flagged':'cleared');}
     else if(e.type==='route'){this.addRoute(e.card,false);this.kpi();}},
   showCase(c,id){$('op-inv').innerHTML=`<div class="invcase" data-id="${id}">
-      <div class="ih">${c.amount?`<div class="iamt">${money0(c.amount)}</div>`:''}<div><div class="ittl">${c.title}</div><div class="isub">${c.sub}</div></div><div class="duty">${c.duty}</div></div>
+      <div class="ih">${c.amount?`<div class="iamt">${money0(c.amount)}</div>`:''}<div><div class="ittl">${c.title}</div><div class="isub">${branchOf(c.store)!==c.store?branchOf(c.store)+' · ':''}${c.sub}</div></div><div class="duty">${c.duty}</div></div>
       <ul class="trace">${traceHTML(c.trace)}</ul>
       <div class="confbar"><div class="cl"><span>confidence</span><span class="tnum">${c.conf.toFixed(2)}</span></div><div class="track"><div class="fill" id="op-fill"></div></div></div>
       <div class="verdict ${c.verdict==='flag'?'flag':'clr'}" id="op-verdict">${c.vtext}</div></div>`;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{const f=$('op-fill');if(f){f.getBoundingClientRect();f.style.width=Math.round(c.conf*100)+'%';}}));},
+    setTimeout(()=>{const f=$('op-fill');if(f){f.getBoundingClientRect();f.style.width=Math.round(c.conf*100)+'%';}},40);},
   resolve(c,verdict){const v=$('op-verdict');if(v)v.classList.add('show');},
   addRoute(card,snap){const rq=$('op-route');const d=document.createElement('div');
     d.className='rqcard'+(card.c.tier===2?' approval':'')+(snap?'':' enter');
     d.innerHTML=`<div class="rqh"><div class="rqt">${card.c.title}</div><span class="status">${card.c.tier===2?'approval':'delivered'}</span></div>
-      <div class="rqto">→ ${RECIP[card.route]} · ${TIERNAME[card.c.tier]}</div>`;rq.prepend(d);while(rq.children.length>14)rq.lastChild.remove();},
+      <div class="rqto">${card.ts?card.ts+' · ':''}→ ${RECIP[card.route]} · ${TIERNAME[card.c.tier]}</div>`;rq.prepend(d);while(rq.children.length>14)rq.lastChild.remove();},
   kpi(){$('op-kpi').innerHTML=`<div class="opkpi"><span>Flagged · exposure</span><b>${money0(state.exposure)}</b></div>
      <div class="opkpi"><span>Awaiting approval</span><b>${state.routed.filter(r=>r.c.tier===2).length}</b></div>
      <div class="opkpi"><span>Auto / 1-click</span><b>${state.routed.filter(r=>r.c.tier<2).length}</b></div>`;}
@@ -411,11 +426,11 @@ function setLayout(name){document.querySelectorAll('.stage').forEach(s=>s.classL
 
 /* ---- engine ---- */
 let tick=null, paused=false, txSinceCase=0, caseIdx=0, INTERVAL=950, forced=false;
-function startCase(){const c={...CASES[caseIdx++%CASES.length]};const tx={id:uid(),store:c.store,type:c.duty,amt:0,ts:clock(),status:'candidate',cand:true,case:c};
+function startCase(){const c={...CASES[caseIdx++%CASES.length]};const tx={id:uid(),store:c.store,type:c.duty,amt:0,ts:fmtTime(new Date()),status:'candidate',cand:true,case:c};
   emit({type:'tx',tx});
   setTimeout(()=>emit({type:'inv',id:tx.id}),260);
   setTimeout(()=>{emit({type:'resolve',id:tx.id,verdict:c.verdict,case:c});
-    if(c.verdict==='flag'&&c.route)setTimeout(()=>emit({type:'route',card:{route:c.route,c}}),820);
+    if(c.verdict==='flag'&&c.route)setTimeout(()=>emit({type:'route',card:{route:c.route,c,ts:fmtTime(new Date())}}),820);
   },1900);}
 function step(){emit({type:'tx',tx:makeTx()});
   txSinceCase++;if(forced||txSinceCase>=4+Math.floor(Math.random()*3)){txSinceCase=0;forced=false;startCase();}}
