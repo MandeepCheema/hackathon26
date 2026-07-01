@@ -1,0 +1,1140 @@
+{
+  "fin_bank_settlements": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "processor",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "deposit_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "covers_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "gross_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "fee_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "net_deposit_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    }
+  ],
+  "fin_bank_settlements__pk": [
+    "id"
+  ],
+  "fin_card_mix": [
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "business_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "card_type",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "gross_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "txn_count",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    }
+  ],
+  "fin_card_mix__pk": [
+    "store_id",
+    "business_date",
+    "card_type"
+  ],
+  "fin_cash_counts": [
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "business_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "counted_cash_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    }
+  ],
+  "fin_cash_counts__pk": [
+    "store_id",
+    "business_date"
+  ],
+  "fin_credit_memos": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "supplier_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "invoice_id",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "amount_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "reason",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "issued_at",
+      "type": "timestamp with time zone",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_credit_memos__pk": [
+    "id"
+  ],
+  "fin_fee_schedule": [
+    {
+      "name": "processor",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "card_type",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "mdr_bps",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "per_txn_fee_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "effective_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_fee_schedule__pk": [
+    "processor",
+    "card_type",
+    "effective_date"
+  ],
+  "fin_goods_receipts": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "po_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "po_line_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "sku_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "received_qty",
+      "type": "numeric",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "received_at",
+      "type": "timestamp with time zone",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_goods_receipts__pk": [
+    "id"
+  ],
+  "fin_invoice_lines": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "invoice_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "po_line_id",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "sku_id",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "billed_qty",
+      "type": "numeric",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "billed_unit_cost_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_invoice_lines__pk": [
+    "id"
+  ],
+  "fin_invoices": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "supplier_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "po_id",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "invoice_number",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "invoiced_at",
+      "type": "timestamp with time zone",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "subtotal_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "tax_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": "0",
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "freight_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": "0",
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "total_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_invoices__pk": [
+    "id"
+  ],
+  "fin_paid_outs": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "business_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "amount_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "reason",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_paid_outs__pk": [
+    "id"
+  ],
+  "fin_payments_out": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "supplier_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "invoice_id",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "paid_at",
+      "type": "timestamp with time zone",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "amount_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "method",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "reference",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_payments_out__pk": [
+    "id"
+  ],
+  "fin_po_lines": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "po_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "sku_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "ordered_qty",
+      "type": "numeric",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "agreed_unit_cost_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    }
+  ],
+  "fin_po_lines__pk": [
+    "id"
+  ],
+  "fin_policy": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "topic",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "body",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "effective_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_policy__pk": [
+    "id"
+  ],
+  "fin_price_list": [
+    {
+      "name": "supplier_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "sku_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "agreed_unit_cost_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "effective_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "end_date",
+      "type": "date",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_price_list__pk": [
+    "supplier_id",
+    "sku_id",
+    "effective_date"
+  ],
+  "fin_purchase_orders": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "supplier_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "ordered_at",
+      "type": "timestamp with time zone",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_purchase_orders__pk": [
+    "id"
+  ],
+  "fin_register_totals": [
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "business_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "cash_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "card_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "txn_count",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "card_txn_count",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    }
+  ],
+  "fin_register_totals__pk": [
+    "store_id",
+    "business_date"
+  ],
+  "fin_register_txns": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "staff_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "business_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "ts",
+      "type": "timestamp with time zone",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "txn_type",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "amount_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "card_last4",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_register_txns__pk": [
+    "id"
+  ],
+  "fin_settlement_adjustments": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "business_date",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "kind",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "amount_cents",
+      "type": "integer",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": 32,
+      "num_scale": 0,
+      "charlen": null
+    },
+    {
+      "name": "note",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_settlement_adjustments__pk": [
+    "id"
+  ],
+  "fin_staff": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "store_id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "hired_at",
+      "type": "date",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": "NO",
+      "default": "'active'::text",
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_staff__pk": [
+    "id"
+  ],
+  "fin_suppliers": [
+    {
+      "name": "id",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": "NO",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "payment_terms",
+      "type": "text",
+      "nullable": "NO",
+      "default": "'net30'::text",
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    },
+    {
+      "name": "tax_id",
+      "type": "text",
+      "nullable": "YES",
+      "default": null,
+      "num_prec": null,
+      "num_scale": null,
+      "charlen": null
+    }
+  ],
+  "fin_suppliers__pk": [
+    "id"
+  ]
+}
