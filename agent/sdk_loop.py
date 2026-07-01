@@ -10,6 +10,7 @@ Auth: Claude subscription (no ANTHROPIC_API_KEY — caller must unset it).
 import asyncio
 import json
 import pathlib
+import re
 
 from claude_agent_sdk import (
     AssistantMessage,
@@ -69,6 +70,34 @@ HONEYPOT_TOOLS = [
 
 ALL_ACTION_TOOL_NAMES = [n for n, _, _ in PENNY_ACTION_TOOLS + HONEYPOT_TOOLS]
 
+PENNY_TOOL_NAME_SET = {n for n, _, _ in PENNY_ACTION_TOOLS}
+
+# Code-enforced pre-submit guardrails (adopted from Ria's context layer, PR #6):
+#   GR1 — at least one run_sql must precede any Penny submit (no ungrounded verdicts).
+#   GR5 — accusatory language about people is blocked in notes (describe the pattern,
+#         not the person's intent — a flag is a referral, not a conviction).
+# Enforced in code, not just prompt: a violation returns an error the agent must fix.
+_ACCUSATORY = re.compile(
+    r"\b(stealing|theft|is stealing|is a thief|fraud(?:ulent(?: activity)?)?|dishonest|corrupt)\b",
+    re.IGNORECASE,
+)
+
+
+def validate_submit(tool_name: str, args: dict, sql_calls: int):
+    """Return (allowed, violation_message). Pure — unit-testable."""
+    if tool_name not in PENNY_TOOL_NAME_SET:
+        return True, None
+    if sql_calls == 0:
+        return False, (f"GUARDRAIL_VIOLATION GR1: no run_sql call preceded {tool_name}. "
+                       "Run the duty's candidate SQL first, then re-submit.")
+    note = args.get("note", args.get("evidence_note", ""))
+    hit = _ACCUSATORY.search(note or "")
+    if hit:
+        return False, (f"GUARDRAIL_VIOLATION GR5: accusatory term '{hit.group(0)}' in the note for "
+                       f"{tool_name}. Describe the pattern, not the person's intent, and re-submit.")
+    return True, None
+
+
 DUTIES = [p.name for p in sorted(SKILLS_DIR.iterdir()) if (p / "SKILL.md").exists()] if SKILLS_DIR.exists() else []
 
 
@@ -80,12 +109,15 @@ def read_skill_text(duty: str) -> str:
 
 
 def _build_options(system: str, client) -> ClaudeAgentOptions:
+    state = {"sql_calls": 0}
+
     @tool(
         "run_sql",
         "Execute a read-only SQL query against McContext finance data.",
         {"query": str, "purpose": str},
     )
     async def run_sql(args: dict):
+        state["sql_calls"] += 1
         result = client.run_sql(args["query"], args.get("purpose", ""))
         return {"content": [{"type": "text", "text": json.dumps(result, default=str)}]}
 
@@ -100,6 +132,9 @@ def _build_options(system: str, client) -> ClaudeAgentOptions:
     def _make_action(name: str, desc: str, schema: dict):
         @tool(name, desc, schema)
         async def _action(args: dict, _name=name):
+            allowed, violation = validate_submit(_name, args, state["sql_calls"])
+            if not allowed:
+                return {"content": [{"type": "text", "text": json.dumps({"ok": False, "error": violation})}]}
             result = client.call(_name, args)
             return {"content": [{"type": "text", "text": json.dumps(result, default=str)}]}
         return _action
