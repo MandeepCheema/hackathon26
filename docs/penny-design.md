@@ -85,10 +85,16 @@ Cheap deterministic nets surface *everything suspicious* (high recall); the agen
 - **Loss prevention:** `stf_009_6` @ str_009 = 0.61 void rate vs 0.17 peer — **corroborates the str_009 cash short → refer_investigation**. str_004's high-void cluster = **store-wide (POS) decoy → clear/monitor**.
 - **Duplicate payment:** 0 real in visible data; 55 look-alikes are legit recurring → real dups only in hidden bench cases. Best as the **decoy/precision showcase**, not a "$ caught" story.
 
-## Scope (proposed, corrected)
-- **Ship first: Cash-over-short + Loss-prevention** — corroborating (str_009 has both), real visible signal, chained-reasoning demo.
-- **Duplicate-payment** = the "doesn't cry wolf" decoy showcase (55 cleared).
-- Add **settlement** ($1,455) + **three-way-match** (7 policy-aware) as mechanical duties.
+## Scope — LOCKED
+
+**v1 (build first): `cash-over-short` + `loss-prevention`.** The corroborating pair — `str_009` carries both a persistent cash short and a high-void cashier (`stf_009_6`), so v1 demonstrates chained cross-duty reasoning + the decoy discipline (`str_004` store-wide voids cleared). Real visible signal; strongest agentic demo.
+
+**v1 action tools:** `submit_cash_variance`, `submit_loss_flag` (incl. `clear`/`balanced` for decoys).
+**v1 read:** `run_sql`. **v1 policy:** none binding for these two, but the guardrail/abstention/peer-baseline logic applies.
+
+**Fast-follow (v2):** `duplicate-payment` (decoy showcase), `settlement` ($1,455, needs fee model), `three-way-match` (7 policy-aware, needs `fin_policy`), `cogs-leakage`.
+
+Each duty ships the full bundle: skill (tool def + policy + decoy exclusions) + candidate-net SQL + eval fixtures.
 
 ## Open items
 - Model tiering (single Opus vs Sonnet+Opus escalation) — measure on eval + bench.
