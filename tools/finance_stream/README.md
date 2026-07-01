@@ -97,6 +97,34 @@ TARGET_DATABASE_URL=postgresql://user:pw@host/db \
 python -m finance_stream --sink both      # stdout JSONL + sqlite at once
 ```
 
+## Live demo (data consumed by an app / agent)
+
+Wall-clock real time (`--speed 1`, so timestamps are *now* and the feed is live),
+a steady cadence an app can react to, and rare leaks so the agent's **precision**
+is what's on show. `--rate 120` across the stores is ~1 transaction every ~4s,
+plus a purchase order every ~10 min.
+
+```bash
+# App/agent reads over SQL: stream into your writable Postgres, load the views once.
+export TARGET_DATABASE_URL="postgresql://…"       # your DB, not the read-only source
+psql "$TARGET_DATABASE_URL" -f tools/finance_stream/views.postgres.sql   # one time
+python -m finance_stream --sink postgres \
+    --rate 120 --po-rate 6 \
+    --inject-leak all --leak-rate 0.03 --leak-log demo_leaks.jsonl
+# the app/agent now queries fin_invoices_all / fin_payments_out_all / … live
+```
+
+```bash
+# Event-driven agent: consume the JSONL feed directly.
+python -m finance_stream --rate 120 --po-rate 6 \
+    --inject-leak all --leak-rate 0.03 --leak-log demo_leaks.jsonl \
+  | your-agent-ingest
+```
+
+Everything stays `--speed 1`; nudge `--rate` for busier/quieter traffic. Daily
+rollups + settlements land at close (21:00) or on `Ctrl-C`; add `--speed 12` if
+you want a full day of them to roll by within a ~1-hour demo.
+
 ## Union it behind one name (`fin_<table>_all`)
 
 Point a consuming app/agent at `fin_<table>_all` and it transparently sees source
