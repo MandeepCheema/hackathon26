@@ -1,0 +1,31 @@
+# ── Secrets — NEVER commit (repo is PUBLIC) ──
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+**/credentials*.json
+
+# ── Python ──
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ── Node ──
+node_modules/
+dist/
+.next/
+
+# ── OS / editor ──
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# ── Local data / scratch ──
+*.sqlite
+*.db
+scratch/
