@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penny · Controls Copilot — flow mock</title>
+<style>
+:root{
+  --navy:#0B3D91; --navy-d:#0A2E6E; --paper:#FBF6EC; --panel:#fff; --ink:#1A1410;
+  --mut:#6b6157; --soft:#938a7e; --line:#e7ddcd; --line2:#efe7d8;
+  --red:#C0392B; --red-bg:#fdecea; --amber:#E0532E; --green:#2E7D52; --green-bg:#eaf5ef;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.mock-flag{background:var(--amber);color:#fff;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:5px}
+.app{max-width:1080px;margin:0 auto;padding:0 20px 60px}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:14px;padding:20px 0 16px;border-bottom:1px solid var(--line)}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;font-size:20px}
+.brand{font-family:var(--serif);font-size:22px;font-weight:600}
+.brand small{font-family:var(--sans);font-size:12px;color:var(--soft);font-weight:400;letter-spacing:.02em}
+.who{margin-left:auto;font-size:13px;color:var(--mut)}
+.who b{color:var(--ink)}
+
+/* hero */
+.hero{display:flex;gap:16px;flex-wrap:wrap;margin:20px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;flex:1;min-width:150px;box-shadow:0 6px 18px rgba(26,20,16,.05)}
+.stat .n{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1}
+.stat .l{font-size:12px;color:var(--soft);margin-top:6px;letter-spacing:.02em}
+.stat.rec .n{color:var(--green)} .stat.leak .n{color:var(--red)} .stat.clr .n{color:var(--navy)}
+
+/* controls */
+.bar{display:flex;align-items:center;gap:10px;margin:6px 0 18px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;background:#f1e9da;border-radius:10px;padding:4px}
+.tab{font-size:13px;font-weight:500;padding:8px 15px;border-radius:7px;border:0;background:transparent;color:var(--mut);cursor:pointer}
+.tab.on{background:var(--panel);color:var(--ink);box-shadow:0 2px 6px rgba(26,20,16,.08)}
+.tab .badge{font-family:var(--mono);font-size:10px;background:var(--line);border-radius:20px;padding:1px 6px;margin-left:5px}
+.scan{margin-left:auto;background:var(--navy);color:#fff;border:0;border-radius:9px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.scan:hover{background:var(--navy-d)} .scan:disabled{opacity:.6;cursor:wait}
+.dot{width:7px;height:7px;border-radius:50%;background:#7fd8a6}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+
+.scanlog{font-family:var(--mono);font-size:12px;color:var(--navy);background:#eef2fb;border:1px solid #d9e2f5;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:none}
+.scanlog.show{display:block}
+.scanlog .ln{opacity:0;animation:fade .3s forwards}
+@keyframes fade{to{opacity:1}}
+
+/* views */
+.view{display:none} .view.on{display:block}
+.empty{text-align:center;color:var(--soft);padding:60px 20px;font-size:14px}
+
+/* leak card */
+.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 4px 14px rgba(26,20,16,.05)}
+.card.dup{border-left-color:var(--amber)} .card.cleared{border-left-color:var(--green);opacity:.92}
+.chead{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer}
+.amt{font-family:var(--serif);font-size:24px;font-weight:600;min-width:96px}
+.card.cleared .amt{color:var(--green);font-size:18px}
+.cmain{flex:1;min-width:0}
+.ctitle{font-weight:600;font-size:15px}
+.csub{font-size:12.5px;color:var(--mut);margin-top:2px}
+.tag{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:5px;background:#f1e9da;color:var(--mut)}
+.conf{font-family:var(--mono);font-size:11px;color:var(--soft);white-space:nowrap}
+.conf b{color:var(--ink)}
+.chev{color:var(--soft);transition:transform .2s;font-size:13px}
+.card.open .chev{transform:rotate(90deg)}
+
+.evi{display:none;padding:0 18px 18px;border-top:1px solid var(--line2)}
+.card.open .evi{display:block}
+.evi h5{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);margin:16px 0 8px}
+.trace{list-style:none;border-left:2px solid #dfe6f4;margin-left:6px;padding-left:16px}
+.trace li{font-size:13px;color:var(--ink);margin:7px 0;position:relative}
+.trace li::before{content:"";position:absolute;left:-21px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--navy)}
+.trace .tool{font-family:var(--mono);font-size:11.5px;color:var(--navy);background:#eef2fb;border-radius:4px;padding:1px 6px}
+.verdict{margin-top:14px;padding:12px 14px;border-radius:9px;font-size:13.5px}
+.verdict.flag{background:var(--red-bg);color:#7a241b} .verdict.clr{background:var(--green-bg);color:#1e5637}
+.verdict b{font-weight:700}
+
+/* action block */
+.action{margin-top:14px;border:1px dashed #c9d4ec;background:#f5f8ff;border-radius:10px;padding:13px 15px}
+.action .arow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.action .alabel{font-size:13.5px;font-weight:600;color:var(--navy);flex:1;min-width:180px}
+.tier{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.tier.t0{background:#eaf5ef;color:var(--green)} .tier.t1{background:#fff4e5;color:#b25c00} .tier.t2{background:var(--red-bg);color:var(--red)}
+.action .atool{font-family:var(--mono);font-size:11px;color:var(--soft);margin-top:7px}
+.exec{background:var(--navy);color:#fff;border:0;border-radius:8px;padding:8px 15px;font-size:12.5px;font-weight:600;cursor:pointer}
+.exec.approve{background:var(--red)} .exec:hover{filter:brightness(1.08)}
+.exec.done{background:var(--green);cursor:default}
+.artifact{font-family:var(--mono);font-size:12px;white-space:pre-wrap;background:#0e1420;color:#d7e0f0;border-radius:9px;padding:14px 16px;margin-top:12px;display:none;line-height:1.5}
+.artifact.show{display:block}
+
+/* actions log */
+.logrow{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:10px;padding:13px 16px;margin-bottom:10px}
+.logrow .lt{font-weight:600;font-size:13.5px} .logrow .lm{font-family:var(--mono);font-size:11.5px;color:var(--soft);margin-top:4px}
+.legend{font-size:11.5px;color:var(--soft);margin:2px 0 16px;display:flex;gap:14px;flex-wrap:wrap}
+
+/* bell + toast + recipient screen */
+.bell{position:relative;margin-left:14px;font-size:20px;cursor:default}
+.bell .bc{position:absolute;top:-6px;right:-8px;background:var(--red);color:#fff;font-family:var(--mono);font-size:10px;min-width:16px;height:16px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.toast{position:fixed;right:20px;bottom:20px;max-width:340px;background:#0e1420;color:#eaf0fb;border-radius:12px;padding:14px 16px;box-shadow:0 16px 40px rgba(0,0,0,.3);transform:translateY(140%);transition:transform .4s cubic-bezier(.2,1,.3,1);z-index:99}
+.toast.show{transform:translateY(0)}
+.toast .tt{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:8px}
+.toast .tb{font-size:12.5px;color:#aebbd4;margin-top:5px}
+.recip{background:linear-gradient(180deg,#0d1b3a,#0a1730);border-radius:14px;padding:18px 20px;color:#e8eefb;margin-bottom:16px}
+.recip .rh{font-family:var(--serif);font-size:19px;font-weight:600}
+.recip .rs{font-size:12.5px;color:#9fb0d6;margin-top:2px}
+.ncard{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:11px;padding:14px 16px;margin-bottom:11px}
+.ncard.approval{border-left-color:var(--red)}
+.ncard .nt{font-weight:600;font-size:14px} .ncard .nb{font-size:12.5px;color:var(--mut);margin-top:5px;white-space:pre-wrap;font-family:var(--mono)}
+.ncard .nact{display:flex;gap:8px;margin-top:11px}
+.ncard .status{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:20px;background:#f1e9da;color:var(--mut)}
+.ncard .status.done{background:var(--green-bg);color:var(--green)}
+.acts{display:flex;gap:8px;margin-top:14px}
+.btn{font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);cursor:pointer}
+.btn.pri{background:var(--red);color:#fff;border-color:var(--red)} .btn.pri:hover{filter:brightness(1.05)}
+.btn.ok{background:var(--green);color:#fff;border-color:var(--green)}
+.btn:hover{background:#f7f1e6}
+
+/* ask */
+.askbox{display:flex;gap:8px;margin-bottom:16px}
+.askbox input{flex:1;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:14px;font-family:var(--sans);background:var(--panel)}
+.askbox input:focus{outline:none;border-color:var(--navy)}
+.askbox button{background:var(--navy);color:#fff;border:0;border-radius:10px;padding:0 20px;font-weight:600;cursor:pointer}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:20px;padding:6px 12px;background:var(--panel);cursor:pointer;color:var(--mut)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.answer{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden;display:none}
+.answer.show{display:block}
+.answer .q{background:#f7f1e6;padding:12px 18px;font-weight:600;font-size:14px;border-bottom:1px solid var(--line2)}
+.answer .body{padding:16px 18px}
+.small{font-size:11.5px;color:var(--soft);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="mock-flag">Interactive flow mock · numbers are real (from the live world DB) · not the built product</div>
+<div class="app">
+
+  <div class="top">
+    <div class="logo">P</div>
+    <div class="brand">Penny <small>· Controls Copilot</small></div>
+    <div class="who">McContext Finance · <b>R. Alvarez</b>, Controller</div>
+    <div class="bell">🔔<span class="bc" id="bellCount" style="display:none">0</span></div>
+  </div>
+
+  <div class="hero">
+    <div class="stat rec"><div class="n" id="s-rec">$0</div><div class="l">Recovered (confirmed)</div></div>
+    <div class="stat leak"><div class="n" id="s-open">0</div><div class="l">Open leaks · exposure <span id="s-exp">$0</span></div></div>
+    <div class="stat clr"><div class="n" id="s-clr">0</div><div class="l">Checked &amp; cleared (no false alarms)</div></div>
+  </div>
+
+  <div class="bar">
+    <div class="tabs">
+      <button class="tab on" data-v="work">Worklist <span class="badge" id="b-work">0</span></button>
+      <button class="tab" data-v="clr">Cleared <span class="badge" id="b-clr">0</span></button>
+      <button class="tab" data-v="acts">Actions <span class="badge" id="b-acts">0</span></button>
+      <button class="tab" data-v="recip">Manager 🔔 <span class="badge" id="b-recip">0</span></button>
+      <button class="tab" data-v="ask">Ask Penny</button>
+    </div>
+    <button class="scan" id="scanBtn"><span class="dot"></span> Scan now</button>
+  </div>
+
+  <div class="scanlog" id="scanlog"></div>
+
+  <!-- WORKLIST -->
+  <div class="view on" id="v-work">
+    <div class="empty" id="workEmpty">No scan yet. Hit <b>Scan now</b> — Penny sweeps 10 stores × 6 duties, then surfaces only what's real.</div>
+    <div id="workList"></div>
+  </div>
+
+  <!-- CLEARED -->
+  <div class="view" id="v-clr">
+    <div class="empty" id="clrEmpty">Nothing cleared yet. After a scan, the decoys Penny <i>didn't</i> flag show here — with the reason.</div>
+    <div id="clrList"></div>
+  </div>
+
+  <!-- ACTIONS LOG -->
+  <div class="view" id="v-acts">
+    <div class="legend">
+      <span><b style="color:var(--green)">● auto</b> reversible/safe</span>
+      <span><b style="color:#b25c00">● 1-click</b> reversible doc</span>
+      <span><b style="color:var(--red)">● approval</b> money / accusation — never autonomous</span>
+    </div>
+    <div class="empty" id="actsEmpty">No actions yet. Execute a recommended action from a leak — Penny logs every step here, with evidence, for audit.</div>
+    <div id="actsList"></div>
+  </div>
+
+  <!-- RECIPIENT SCREEN -->
+  <div class="view" id="v-recip">
+    <div class="recip"><div class="rh">Regional Manager · Midwest 🔔</div><div class="rs">Incoming from Penny — cases assigned to you, payment-holds &amp; disputes awaiting action. This is a <b>different user's screen</b>; Penny's actions land here.</div></div>
+    <div class="empty" id="recipEmpty">Nothing yet. When the controller executes an action, it shows up on the recipient's screen here.</div>
+    <div id="recipList"></div>
+  </div>
+
+  <!-- ASK -->
+  <div class="view" id="v-ask">
+    <div class="askbox">
+      <input id="askIn" placeholder="Ask Penny to investigate… e.g. 'was the $420 sup_bev payment on Jun 8 a duplicate?'">
+      <button id="askBtn">Ask</button>
+    </div>
+    <div class="chips">
+      <span class="chip" data-q="Was the $420 sup_bev payment on Jun 8 a duplicate?">$420 sup_bev · dup?</span>
+      <span class="chip" data-q="Why is store str_003 short on cash?">str_003 cash short?</span>
+      <span class="chip" data-q="Is supplier sup_meat overbilling us?">sup_meat overbilling?</span>
+    </div>
+    <div class="answer" id="answer"><div class="q" id="ansQ"></div><div class="body" id="ansBody"></div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><div class="tt" id="toastT"></div><div class="tb" id="toastB"></div></div>
+
+<script>
+// ---- real numbers from our DB probes ----
+const LEAKS=[
+ {id:'l1',cls:'',amt:'$610',title:'Cash skim — str_009',sub:'cash-over-short · 14 days, tight +$43/day bias',conf:'0.91',
+  trace:['<span class="tool">cash_bias_stats(str_009)</span> → mean +$43.57/day, sd $11, net $610 over 14 days',
+         'Bias is <b>one-directional & tight</b> (sd ≪ mean) → not random counting noise',
+         'Cross-check <span class="tool">register_txns(str_009)</span> → concentrated on one staff shift',
+         'No float change or incident logged to explain it'],
+  vc:'flag',vt:'<b>Flag — likely skim.</b> Consistent daily positive bias at one till, one shift.',exp:610,
+  action:{label:'Open loss-prevention case + assign to regional manager',tier:2,tool:'open_lp_case(str_009, evidence)',
+    artifact:'LP CASE #LP-0091 — str_009\n──────────────────\nType: Suspected cash skim\nExposure: $610 over 14 days\nEvidence: tight +$43.57/day bias (sd $11), one staff shift\nAssigned: Regional Mgr, Midwest\nStatus: OPEN — pending review\nNote: no accusation made; evidence packet attached for HR/LP.'}},
+ {id:'l2',cls:'dup',amt:'$420',title:'Possible duplicate payment — sup_bev',sub:'duplicate-payment · same amount, same week, one store',conf:'0.64',
+  trace:['<span class="tool">payment_coverage(pay_8841)</span> → $420 to sup_bev, Jun 8',
+         'Found 2nd $420 sup_bev payment same week — <b>same store</b>, <b>no 2nd invoice</b> backing it',
+         'Unlike the 7-store weekly cluster (those had distinct invoices) → this one is uncovered',
+         'Confidence 0.64 — recommend human confirm before clawback'],
+  vc:'flag',vt:'<b>Flag for review — uncovered repeat.</b> No 2nd invoice backs the 2nd payment. Not proven.',exp:420,
+  action:{label:'Place payment-hold + draft clawback request',tier:2,tool:'hold_payment(pay_8842) + draft_clawback()',
+    artifact:'PAYMENT HOLD + CLAWBACK (DRAFT) — sup_bev\n──────────────────\nHold placed on: pay_8842 ($420, Jun 8)\nReason: no invoice backing 2nd same-week payment\nClawback amount: $420 (pending confirmation)\nConfidence: 0.64 — HUMAN APPROVAL REQUIRED\nPenny did NOT move money — hold + draft only.'}},
+ {id:'l3',cls:'',amt:'$402',title:'Overbilling — 11 invoice lines',sub:'three-way-match · billed &gt; received / agreed',conf:'0.88',
+  trace:['<span class="tool">three_way_match(multiple POs)</span> → 11 lines billed above received qty or agreed cost',
+         'Deterministic reconciliation — exact, tool-computed (no LLM arithmetic)',
+         'Net overcharge exposure <b>$402.60</b> across 4 suppliers'],
+  vc:'flag',vt:'<b>Flag — overbilled.</b> Mechanical, high-confidence. Reversible dispute.',exp:402,
+  action:{label:'Draft credit-memo / supplier dispute (1-click issue)',tier:1,tool:'draft_credit_memo(11 lines)',
+    artifact:'CREDIT-MEMO / DISPUTE (DRAFT) — 4 suppliers\n──────────────────\n11 invoice lines billed above received qty / agreed cost\nTotal claimed back: $402.60\nBreakdown: sup_meat 5 lines, sup_bev 3, sup_produce 2, sup_bake 1\nAction: issue credit-memo request to each supplier\nReversible · 1-click to send.'}}
+];
+const CLEARED=[
+ {amt:'55×',title:'Recurring supplier payments — NOT duplicates',sub:'looked like dup-pay (same supplier+amount ×11)',
+  trace:['Naive rule flags "same supplier + amount, 11×" as duplicates',
+         '<span class="tool">payment_coverage()</span> → each has a <b>distinct invoice</b>, spread over 7–8 weeks',
+         'Regular weekly cadence = legitimate recurring order'],
+  vt:'<b>Cleared.</b> Distinct invoices + weekly cadence. Flagging these = crying wolf.'},
+ {amt:'269×',title:'Sub-$5 cash mismatches — rounding noise',sub:'register vs counted cash, tiny diffs',
+  trace:['269 of 310 mismatches are ≤ $5, avg ≈ $0, no directional bias',
+         'str_001/str_002: 95+ days each, net −$1 to −$27 → statistical noise'],
+  vt:'<b>Cleared.</b> No persistent bias. Real controls teams ignore rounding-level noise.'}
+];
+const ANSWERS={
+ 'Was the $420 sup_bev payment on Jun 8 a duplicate?':
+   ['<b>Investigating…</b>',
+    ['<span class="tool">payment_coverage(sup_bev, Jun 8, $420)</span> → 1 payment found',
+     'Scan same supplier+amount nearby → a 2nd $420 sup_bev payment <b>same week, same store</b>',
+     'Check invoices → only <b>one</b> invoice covers both payments — 2nd is <b>uncovered</b>',
+     'Compare to the known decoy: the 7-store weekly cluster each had <i>distinct</i> invoices — this does not'],
+    'clr','<b>Likely a duplicate (confidence 0.64).</b> Two $420 payments to sup_bev the same week at one store, only one invoice backing them. Not certain — I\'d route it for human confirmation before any clawback. It\'s distinct from the recurring weekly cluster, which is legitimate.'],
+ 'Why is store str_003 short on cash?':
+   ['<b>Investigating…</b>',
+    ['<span class="tool">cash_bias_stats(str_003)</span> → +$6.19/day over 92 days, net $569, sd $15',
+     'Mean is small but <b>persistent</b>: ~3.9 standard errors above zero → statistically real, not noise',
+     'Spread thin & low per-day → looks like slow leakage, not a single event',
+     'Not enough in the data to name a cause (staff vs process)'],
+    'clr','<b>Real but low-grade shortfall.</b> str_003 runs ~$6/day short, persistently, for 92 days — statistically significant, ~$569 total. I can\'t tell theft from a process issue from the data alone, so I\'d flag it for review rather than accuse. This is the kind of quiet leak a threshold rule misses.'],
+ 'Is supplier sup_meat overbilling us?':
+   ['<b>Investigating…</b>',
+    ['<span class="tool">three_way_match(sup_meat POs)</span> → compare billed vs received vs agreed',
+     'Several sup_meat lines appear in the 11 overbilled lines (part of $402 exposure)',
+     'Also has many same-amount recurring payments — those are <b>legit</b> (distinct invoices)'],
+    'clr','<b>Partly.</b> Some sup_meat invoice lines are billed over agreed cost (real, in the $402 exposure) — dispute those. But its repeated same-amount payments are normal recurring orders, not duplicates. Two different things; don\'t conflate them.']
+};
+
+// ---- state ----
+let scanned=false, recovered=0, ACTIONS=[], NOTIFS=[];
+// where each executed action gets delivered
+const ROUTE={l1:{who:'Regional Manager · Midwest',kind:'LP case assigned'},
+             l2:{who:'Accounts Payable',kind:'Payment-hold + clawback'},
+             l3:{who:'Supplier Relations',kind:'Credit-memo / dispute'}};
+const $=id=>document.getElementById(id);
+function money(n){return '$'+n.toLocaleString()}
+
+// tabs
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+ document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+ t.classList.add('on'); $('v-'+t.dataset.v).classList.add('on');
+});
+
+// scan
+$('scanBtn').onclick=()=>{
+ const b=$('scanBtn'); b.disabled=true; b.innerHTML='<span class="spin"></span> Scanning…';
+ const log=$('scanlog'); log.classList.add('show'); log.innerHTML='';
+ const steps=['sweeping 10 stores × 6 duties…','candidate net: 365 anomalies (310 cash + 55 repeat-pay)…',
+  'adjudicating candidates with judgment…','cleared 324 (noise + recurring) · escalated 3 real…','done.'];
+ steps.forEach((s,i)=>{const d=document.createElement('div');d.className='ln';d.style.animationDelay=(i*.5)+'s';d.textContent='▸ '+s;log.appendChild(d);});
+ setTimeout(()=>{ b.disabled=false; b.innerHTML='<span class="dot"></span> Re-scan'; scanned=true; render(); },steps.length*500+300);
+};
+
+function render(){
+ if(!scanned)return;
+ $('workEmpty').style.display='none'; $('clrEmpty').style.display='none';
+ // worklist
+ const wl=$('workList'); wl.innerHTML='';
+ let openCount=0,exp=0;
+ LEAKS.forEach(l=>{ if(l.done)return; openCount++; exp+=l.exp; wl.appendChild(cardEl(l)); });
+ // cleared
+ const cl=$('clrList'); cl.innerHTML='';
+ CLEARED.forEach(c=>cl.appendChild(clrEl(c)));
+ LEAKS.filter(l=>l.done==='clr').forEach(l=>cl.appendChild(cardEl(l,true)));
+ // actions log
+ const al=$('actsList'); al.innerHTML=''; $('actsEmpty').style.display=ACTIONS.length?'none':'block';
+ ACTIONS.forEach(a=>{const d=document.createElement('div');d.className='logrow';
+   d.innerHTML=`<div class="lt">${a.label}</div><div class="lm">${a.tool} · ${a.tier} · ${a.when}</div>`;al.appendChild(d);});
+ $('b-acts').textContent=ACTIONS.length;
+ // stats
+ $('s-rec').textContent=money(recovered);
+ $('s-open').textContent=openCount; $('s-exp').textContent=money(exp);
+ const clrN=CLEARED.length + LEAKS.filter(l=>l.done).length;
+ $('s-clr').textContent='324'; // headline: 324 auto-cleared
+ $('b-work').textContent=openCount; $('b-clr').textContent=2+LEAKS.filter(l=>l.done==='clr').length;
+}
+
+function cardEl(l,inClr){
+ const d=document.createElement('div'); d.className='card '+l.cls+(inClr?' cleared':'');
+ d.innerHTML=`<div class="chead">
+    <div class="amt">${l.amt}</div>
+    <div class="cmain"><div class="ctitle">${l.title}</div><div class="csub">${l.sub}</div></div>
+    <div class="conf">conf <b>${l.conf}</b></div><div class="chev">▶</div></div>
+  <div class="evi">
+    <h5>Evidence trail — how Penny reasoned</h5>
+    <ul class="trace">${l.trace.map(t=>`<li>${t}</li>`).join('')}</ul>
+    <div class="verdict ${l.vc}">${l.vt}</div>
+    ${inClr?'':`
+    <div class="action">
+      <div class="arow">
+        <div class="alabel">▶ Recommended action: ${l.action.label}</div>
+        <span class="tier t${l.action.tier}">${['auto','1-click','approval'][l.action.tier]}</span>
+        <button class="exec ${l.action.tier===2?'approve':''}" data-act="exec" data-id="${l.id}">${l.action.tier===2?'Approve & execute':'Execute'}</button>
+      </div>
+      <div class="atool">calls <span>${l.action.tool}</span></div>
+      <div class="artifact" id="art-${l.id}">${l.action.artifact}</div>
+    </div>
+    <div class="acts">
+       <button class="btn ok" data-act="dismiss" data-id="${l.id}">Not a leak — dismiss</button></div>`}
+  </div>`;
+ d.querySelector('.chead').onclick=()=>d.classList.toggle('open');
+ d.querySelectorAll('.btn,.exec').forEach(btn=>btn.onclick=(e)=>{e.stopPropagation();act(btn.dataset.act,l,btn);});
+ return d;
+}
+function clrEl(c){
+ const d=document.createElement('div'); d.className='card cleared';
+ d.innerHTML=`<div class="chead"><div class="amt">${c.amt}</div>
+   <div class="cmain"><div class="ctitle">${c.title}</div><div class="csub">${c.sub}</div></div><div class="chev">▶</div></div>
+  <div class="evi"><h5>Why Penny cleared it</h5>
+   <ul class="trace">${c.trace.map(t=>`<li>${t}</li>`).join('')}</ul>
+   <div class="verdict clr">${c.vt}</div></div>`;
+ d.querySelector('.chead').onclick=()=>d.classList.toggle('open');
+ return d;
+}
+function act(a,l,btn){
+ if(a==='dismiss'){l.done='clr'; l.vt='<b>Dismissed by controller</b> — moved to cleared. Feedback logged to improve Penny.'; render(); return;}
+ if(a==='exec'){
+   // reveal artifact + log action; recovered $ books on execute
+   const art=$('art-'+l.id); if(art)art.classList.add('show');
+   if(btn){btn.classList.add('done'); btn.textContent='✓ Executed'; btn.disabled=true;}
+   recovered+=l.exp;
+   const tierName=['auto','1-click','approval'][l.action.tier];
+   ACTIONS.push({label:l.action.label, tool:l.action.tool, tier:tierName, when:'just now'});
+   const r=ROUTE[l.id]||{who:'Ops',kind:'Action'};
+   NOTIFS.push({who:r.who,kind:r.kind,label:l.action.label,artifact:l.action.artifact,tier:tierName,approval:l.action.tier===2});
+   $('s-rec').textContent=money(recovered); $('b-acts').textContent=ACTIONS.length;
+   // refresh actions log
+   const al=$('actsList'); al.innerHTML=''; $('actsEmpty').style.display='none';
+   ACTIONS.forEach(x=>{const d=document.createElement('div');d.className='logrow';
+     d.innerHTML=`<div class="lt">${x.label}</div><div class="lm">${x.tool} · ${x.tier} · ${x.when}</div>`;al.appendChild(d);});
+   renderRecip();
+   toast(r.kind+' → '+r.who, l.action.label);
+   return;
+ }
+}
+function renderRecip(){
+ $('recipEmpty').style.display=NOTIFS.length?'none':'block';
+ $('b-recip').textContent=NOTIFS.length;
+ const bc=$('bellCount'); bc.style.display=NOTIFS.length?'flex':'none'; bc.textContent=NOTIFS.length;
+ const rl=$('recipList'); rl.innerHTML='';
+ NOTIFS.forEach(n=>{const d=document.createElement('div');d.className='ncard'+(n.approval?' approval':'');
+   d.innerHTML=`<div style="display:flex;align-items:center;gap:10px">
+       <div class="nt">${n.kind} · to ${n.who}</div>
+       <span class="status ${n.approval?'':'done'}">${n.approval?'awaiting approval':'delivered'}</span></div>
+     <div class="nb">${n.artifact}</div>
+     ${n.approval?'<div class="nact"><button class="btn ok" onclick="this.closest(\'.ncard\').querySelector(\'.status\').textContent=\'approved\';this.closest(\'.ncard\').querySelector(\'.status\').className=\'status done\';this.remove()">Approve</button><button class="btn">Reject</button></div>':''}`;
+   rl.appendChild(d);});
+}
+let toastTimer;
+function toast(t,b){$('toastT').innerHTML='🔔 '+t;$('toastB').textContent=b;const el=$('toast');el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3800);}
+
+// ask
+function ask(q){
+ const canned=ANSWERS[q]||['<b>Investigating…</b>',['<span class="tool">exploring the data…</span>','(mock: try one of the example chips)'],'clr','This is a flow mock — the example questions above show real investigation traces.'];
+ $('ansQ').textContent=q; $('answer').classList.add('show');
+ const body=$('ansBody'); body.innerHTML='<div style="font-family:var(--mono);font-size:12px;color:var(--navy)">'+canned[0]+'</div>';
+ setTimeout(()=>{
+   body.innerHTML=`<h5 style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);margin:4px 0 8px">Investigation trace</h5>
+     <ul class="trace">${canned[1].map(t=>`<li>${t}</li>`).join('')}</ul>
+     <div class="verdict ${canned[2]}" style="margin-top:14px">${canned[3]}</div>`;
+ },700);
+}
+$('askBtn').onclick=()=>{if($('askIn').value.trim())ask($('askIn').value.trim());};
+$('askIn').addEventListener('keydown',e=>{if(e.key==='Enter'&&$('askIn').value.trim())ask($('askIn').value.trim());});
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$('askIn').value=c.dataset.q;ask(c.dataset.q);});
+</script>
+</body>
+</html>

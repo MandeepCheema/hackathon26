@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penny · Architecture &amp; Data Flow</title>
+<style>
+:root{
+  --navy:#0B3D91;--navy-d:#0A2E6E;--paper:#FBF6EC;--panel:#fff;--ink:#1A1410;
+  --mut:#6b6157;--soft:#938a7e;--line:#e2d8c7;
+  --gen:#8E44AD;--data:#2E7D52;--agent:#0B3D91;--app:#E0532E;--ui:#B25C00;--bench:#7a6b58;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;--serif:"Fraunces",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;padding:0 0 80px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header{padding:40px 0 22px;border-bottom:1px solid var(--line);margin-bottom:34px}
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--navy)}
+h1{font-family:var(--serif);font-size:40px;font-weight:600;margin:.2em 0 .1em}
+.sub{color:var(--mut);max-width:64ch}
+h2{font-family:var(--serif);font-size:26px;font-weight:600;margin:44px 0 6px}
+.h2sub{color:var(--mut);font-size:14px;margin-bottom:20px;max-width:70ch}
+
+/* lane diagram */
+.lane{border:1px solid var(--line);border-radius:14px;background:var(--panel);margin:14px 0;overflow:hidden;box-shadow:0 6px 18px rgba(26,20,16,.05)}
+.lane .lh{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:8px 16px;color:#fff}
+.lane .lb{display:flex;gap:12px;flex-wrap:wrap;padding:16px}
+.box{flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fdfbf6}
+.box .bt{font-weight:700;font-size:14px}
+.box .bd{font-size:12px;color:var(--mut);margin-top:4px;line-height:1.4}
+.box code,.mono{font-family:var(--mono);font-size:11px;color:var(--navy)}
+.tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:5px;margin-top:8px}
+.arrow{text-align:center;color:var(--soft);font-size:20px;line-height:1;margin:-2px 0}
+
+.L-gen .lh{background:var(--gen)} .L-data .lh{background:var(--data)}
+.L-agent .lh{background:var(--agent)} .L-app .lh{background:var(--app)}
+.L-ui .lh{background:var(--ui)} .L-bench .lh{background:var(--bench)}
+.L-gen .box{border-color:#d9c2e6} .L-data .box{border-color:#bfe0cd}
+.L-agent .box{border-color:#c3d1ee} .L-app .box{border-color:#f3cbbd}
+.L-ui .box{border-color:#eddcc0} .L-bench{opacity:.96}
+.tag.gen{background:#f2e6f7;color:var(--gen)} .tag.data{background:#e7f4ec;color:var(--data)}
+.tag.agent{background:#e8eefb;color:var(--agent)} .tag.app{background:#fdece5;color:var(--app)}
+.tag.ui{background:#faf0dd;color:var(--ui)} .tag.warn{background:#fdecea;color:#C0392B}
+
+/* dataflow */
+.flow{counter-reset:step;margin-top:8px}
+.step{display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border-bottom:0}
+.step .n{counter-increment:step;flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;font-family:var(--mono);font-size:13px;display:flex;align-items:center;justify-content:center}
+.step .n::before{content:counter(step)}
+.step .sx{font-size:14px}.step .sx b{font-weight:600}
+.step .sx .mono{background:#eef2fb;border-radius:4px;padding:1px 6px}
+.pill{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:20px;background:#f1e9da;color:var(--mut);margin-left:6px}
+.note{font-size:12.5px;color:var(--soft);font-family:var(--mono);margin-top:10px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin:6px 0 0}
+.legend span::before{content:"● ";}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.split{grid-template-columns:1fr}}
+.callout{border-left:4px solid var(--navy);background:#f5f8ff;border-radius:8px;padding:12px 16px;font-size:13.5px;margin:14px 0}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="kick">Penny · Controls Copilot — McContext</div>
+  <h1>Architecture &amp; Data Flow</h1>
+  <p class="sub">One agent brain, two runtimes. A <b>transaction generator</b> feeds a live demo world; the same Penny agent that runs the graded bench powers the product. Executed actions land as <b>notifications on the recipient's screen</b>.</p>
+</div></header>
+
+<div class="wrap">
+
+<!-- ============ ARCHITECTURE ============ -->
+<h2>1 · System architecture</h2>
+<p class="h2sub">Five planes. The <b>agent (CMA)</b> is the only brain — identical in product and bench; only the data source and front doors change.</p>
+
+<div class="lane L-gen">
+  <div class="lh">Generation plane · product/demo only</div>
+  <div class="lb">
+    <div class="box"><div class="bt">Transaction Generator</div><div class="bd">Synthesizes a stream of payments, register totals/counts, invoices, POs, receipts. Steady baseline + <b>injectable leaks</b> (skim, dup, overbill) and <b>decoys</b> (recurring pays, rounding noise) on demand.</div><span class="tag gen">controllable · seeds the demo money-shot</span></div>
+  </div>
+</div>
+<div class="arrow">↓ writes</div>
+
+<div class="lane L-data">
+  <div class="lh">Data plane</div>
+  <div class="lb">
+    <div class="box"><div class="bt">World Store (Postgres)</div><div class="bd">Mirrors the <code>world.*</code> schema. Product = our store (generator-fed). <b>Bench = McContext's hidden data.</b></div><span class="tag data">read-only to the agent</span></div>
+    <div class="box"><div class="bt">MCP Server</div><div class="bd">Exposes <span class="mono">read tools</span> to investigate + <span class="mono">action tools</span> to resolve. The agent discovers the toolset itself.</div><span class="tag data">the contract</span></div>
+  </div>
+</div>
+<div class="arrow">↓ read tools · ↑ action tools</div>
+
+<div class="lane L-agent">
+  <div class="lh">Agent plane · the only brain (Claude Managed Agent)</div>
+  <div class="lb">
+    <div class="box"><div class="bt">Penny Agent</div><div class="bd"><code>model</code> + <code>system</code> (judgment, abstention, anti-injection) + per-duty <code>skills</code>.</div><span class="tag agent">registered id + version</span></div>
+    <div class="box"><div class="bt">Deterministic tool sidecar</div><div class="bd">Candidate nets (anomaly recall) + math: <span class="mono">three_way_match</span>, <span class="mono">cash_bias_stats</span>, <span class="mono">expected_fees</span>, <span class="mono">payment_coverage</span>.</div><span class="tag agent">sensing</span></div>
+    <div class="box"><div class="bt">Adjudication + action</div><div class="bd">Real vs decoy? root cause? abstain? Then chooses an action under <b>graduated autonomy</b>.</div><span class="tag agent">deciding</span></div>
+  </div>
+</div>
+<div class="arrow">↓ candidate verdicts (before any action)</div>
+
+<div class="lane" style="--x:#C0392B">
+  <div class="lh" style="background:#C0392B">Policy &amp; Guardrail plane · the integrity layer</div>
+  <div class="lb">
+    <div class="box" style="border-color:#f3c7c1"><div class="bt">Policy Engine</div><div class="bd">Reads <code>fin_policy</code> + <code>policy_registry</code>, <b>version + effective-date aware</b> (active only, never retired). Materiality / tolerance / COGS bands + refund caps. Every verdict <b>cites a policy id</b>.</div><span class="tag warn">grounds the judgment</span></div>
+    <div class="box" style="border-color:#f3c7c1"><div class="bt">Guardrails</div><div class="bd"><b>Input</b>: data≠instructions (anti-injection). <b>Action</b>: confidence gate · spend cap→escalate · irreversible→approval · honor each tool's "do NOT flag". <b>Tool</b>: read-only, allowlist. <b>Abstain</b>: thin evidence→clear/decline.</div><span class="tag warn">aggressive detect, conservative act</span></div>
+    <div class="box" style="border-color:#f3c7c1"><div class="bt">Decision Memory + Feedback</div><div class="bd">Ledger (entity+duty+period): dedup, never re-flag dismissed items. Human confirm/dismiss → learned exclusions + threshold tuning.</div></div>
+    <div class="box" style="border-color:#f3c7c1"><div class="bt">Confidence calibration</div><div class="bd">0–1 confidence → autonomy tier. Money/accusation always human. Calibrated on the eval set.</div></div>
+  </div>
+</div>
+<div class="arrow">↓ policy-cleared, guardrailed action-tool calls + trace</div>
+
+<div class="lane L-app">
+  <div class="lh">Application plane · product only (FastAPI + SQLite)</div>
+  <div class="lb">
+    <div class="box"><div class="bt">Scan Orchestrator</div><div class="bd">Triggers scans: on-demand, scheduled, or on a new generator batch. Runs the agent over candidates.</div></div>
+    <div class="box"><div class="bt">Action Executor</div><div class="bd">Turns action-tool calls into artifacts (credit-memo, hold+clawback, LP case). <b>Gates money/accusations behind approval; blocks irreversible.</b></div><span class="tag warn">guardrail</span></div>
+    <div class="box"><div class="bt">App DB</div><div class="bd">Flags, cleared items, <b>audit log</b>, notifications.</div></div>
+    <div class="box"><div class="bt">Notification Service</div><div class="bd">Routes executed/pending actions to the right recipient screen + console toast.</div></div>
+  </div>
+</div>
+<div class="arrow">↓ serves</div>
+
+<div class="lane L-ui">
+  <div class="lh">Presentation plane · product only</div>
+  <div class="lb">
+    <div class="box"><div class="bt">Controller Console</div><div class="bd">Worklist · Cleared lane · Actions/audit · Ask Penny. The controller's cockpit.</div></div>
+    <div class="box"><div class="bt">Recipient screens 🔔</div><div class="bd"><b>Regional Manager</b> inbox (LP cases, assignments) · <b>Supplier</b> dispute notices · <b>AP</b> payment-holds. Where executed actions <b>show up</b>.</div><span class="tag ui">closes the loop</span></div>
+  </div>
+</div>
+
+<div class="callout"><b>Bench runtime (parallel, graded):</b> the same Penny agent, but data plane = McContext's hidden MCP, and there's <b>no generator, console, or recipient screens</b> — a simulator drives cases, the agent calls the typed <span class="mono">submit_*</span> action tools, and a judge scores the trace + outcome. <b>Product work = bench work.</b></div>
+
+<div class="callout" style="border-left-color:#8E44AD;background:#f7f0fb"><b>Dev-time harness (not in either runtime):</b> the <b>Eval harness</b> uses generator ground-truth to score <b>precision / recall / F1 per duty</b> offline — the gate is <i>don't spend a bench life until offline F1 ≥ target</i>. Regression fixtures = the real finds (str_009 / str_003 cash, stf_009_6 loss) and the decoys (55 recurring, 4 sub-tolerance 3-way lines). A <b>Cost governor</b> (candidate-net-first, turn/token cap, model tiering) keeps scans inside the $50 budget.</div>
+
+<!-- ============ DATA FLOW ============ -->
+<h2>2 · Data flow — product runtime</h2>
+<p class="h2sub">The precision funnel end to end: generate → sense (cheap, high recall) → adjudicate (judgment, high precision) → resolve → notify.</p>
+
+<div class="flow">
+  <div class="step"><div class="n"></div><div class="sx"><b>Transaction Generator</b> emits a batch of txns/events — plus any <b>injected</b> leaks/decoys — into the World Store. <span class="pill">demo control</span></div></div>
+  <div class="step"><div class="n"></div><div class="sx">A <b>scan</b> fires — <span class="mono">Scan now</span>, schedule, or new-batch trigger — waking the Orchestrator.</div></div>
+  <div class="step"><div class="n"></div><div class="sx">Orchestrator invokes the <b>Penny agent</b>; it reads the store through the <b>MCP</b> read tools.</div></div>
+  <div class="step"><div class="n"></div><div class="sx"><b>Candidate nets</b> (deterministic tools) surface everything suspicious — high recall (e.g. 365 anomalies). <span class="pill">sensing</span></div></div>
+  <div class="step"><div class="n"></div><div class="sx"><b>Adjudication</b> (LLM judgment) reasons only on candidates: real vs decoy, root cause, or <b>abstain</b> — high precision (365 → ~3). <span class="pill">deciding</span></div></div>
+  <div class="step"><div class="n"></div><div class="sx">For each verdict the agent calls an <b>action tool</b> under graduated autonomy (<span class="mono">open_lp_case</span>, <span class="mono">hold_payment</span>, <span class="mono">draft_credit_memo</span>, <span class="mono">record_flag</span>).</div></div>
+  <div class="step"><div class="n"></div><div class="sx"><b>Action Executor</b> gates it (auto / 1-click / approval-required), produces the artifact, writes the <b>audit log</b>. Money &amp; accusations never fire autonomously.</div></div>
+  <div class="step"><div class="n"></div><div class="sx"><b>Notification Service</b> pushes the result to the recipient screen 🔔 (Regional Manager / Supplier / AP) + a console toast.</div></div>
+  <div class="step"><div class="n"></div><div class="sx">Controller triages in the <b>Console</b> (confirm / dismiss / approve); feedback + outcomes loop back to the audit trail.</div></div>
+</div>
+<div class="legend">
+  <span style="color:var(--gen)">Generator</span>
+  <span style="color:var(--data)">Data / MCP</span>
+  <span style="color:var(--agent)">Agent</span>
+  <span style="color:var(--app)">App / actions</span>
+  <span style="color:var(--ui)">Screens</span>
+</div>
+
+<h2>3 · Data flow — bench runtime</h2>
+<p class="h2sub">Same brain, stripped to what's graded.</p>
+<div class="flow">
+  <div class="step"><div class="n"></div><div class="sx">Bench harness starts a session with the registered <b>agent id + version</b>. <span class="pill">3 lives</span></div></div>
+  <div class="step"><div class="n"></div><div class="sx">A <b>simulator</b> presents hidden cases; the agent investigates via the <b>McContext MCP</b> read tools.</div></div>
+  <div class="step"><div class="n"></div><div class="sx">Same funnel: candidate nets → adjudication → verdict / abstain.</div></div>
+  <div class="step"><div class="n"></div><div class="sx">Agent records the outcome through <b>action tools</b> — this <b>is</b> the graded result.</div></div>
+  <div class="step"><div class="n"></div><div class="sx">A <b>judge</b> scores the trace + outcome on precision, recall, judgment, security, efficiency, communication.</div></div>
+</div>
+
+<div class="callout" style="margin-top:30px"><b>Why the generator matters for winning:</b> the bench uses hidden data we can't see, and the world DB is static — so for the <b>product demo</b> the generator lets us stage the exact narrative on stage: inject a skim → hit Scan → watch Penny catch it, clear the decoys, open the LP case, and the Regional Manager's screen light up. Live, controllable, repeatable.</div>
+
+</div>
+</body>
+</html>

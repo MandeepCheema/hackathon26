@@ -34,7 +34,17 @@ candidate gen    ──▶   agent adjudication   ──▶   flag+evidence / cl
 - **Bench runtime:** CMA in workspace, MCP = McContext hidden data, `record_flag` calls scored.
 - **Product runtime:** our app drives the *same* agent, MCP = our read-only Postgres, renders flags + traces.
 
-Full design: [`docs/penny-design.md`](docs/penny-design.md) *(draft — evolving)*.
+## Docs
+
+| Doc | What |
+|---|---|
+| [`docs/penny-design.md`](docs/penny-design.md) | Full design — decisions, integrity layer, corrected findings, scope *(draft, evolving)* |
+| [`docs/architecture.md`](docs/architecture.md) · [`.html`](docs/architecture.html) | Planes + data flow (markdown mirror + visual) |
+| [`docs/mcp-contract.md`](docs/mcp-contract.md) | The live MCP tools + Penny action schemas + rubric |
+| [`docs/policies.md`](docs/policies.md) | `fin_policy` / `policy_registry` / fee schedule — the grounding |
+| [`docs/data-findings.md`](docs/data-findings.md) | `world` schema map + rubric-grounded leak inventory |
+| [`mock/penny-console.html`](mock/penny-console.html) | Clickable flow prototype (scan → detect → resolve → notify) |
+| [`challenges.html`](challenges.html) | All 5 hackathon challenges, one page |
 
 ## Repo layout (planned)
 
