@@ -1,0 +1,5 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pyyaml>=6.0
+# PENNY_BACKEND=agent additionally needs the repo root requirements
+# (claude-agent-sdk, psycopg, ...) — see ../requirements.txt

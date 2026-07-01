@@ -1,0 +1,9 @@
+# Railway service config — Penny Console (FastAPI)
+# Deploy: `railway up` from the repo root (or connect the GitHub repo in the
+# Railway dashboard and it will pick this file up).
+[build]
+builder = "DOCKERFILE"
+
+[deploy]
+healthcheckPath = "/healthz"
+restartPolicyType = "ON_FAILURE"
