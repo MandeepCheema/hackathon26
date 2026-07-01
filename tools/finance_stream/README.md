@@ -97,6 +97,49 @@ TARGET_DATABASE_URL=postgresql://user:pw@host/db \
 python -m finance_stream --sink both      # stdout JSONL + sqlite at once
 ```
 
+## Union it behind one name (`fin_<table>_all`)
+
+Point a consuming app/agent at `fin_<table>_all` and it transparently sees source
+rows plus everything the stream generated. Generate the DDL (no DB needed):
+
+```bash
+python -m finance_stream --emit-views postgres > views.postgres.sql   # world + synth schemas
+python -m finance_stream --emit-views sqlite   > views.sqlite.sql     # world_<t> + synth_<t>
+```
+
+Ready-made copies are committed alongside this README
+([`views.postgres.sql`](views.postgres.sql), [`views.sqlite.sql`](views.sqlite.sql)).
+The 14 generated tables get real+synthetic `UNION ALL` views; the 5 dimension
+tables get passthrough views so `_all` works uniformly. Example:
+
+```sql
+CREATE OR REPLACE VIEW "fin_invoices_all" AS
+  SELECT * FROM world."fin_invoices"
+  UNION ALL
+  SELECT * FROM synth."fin_invoices";
+```
+
+## Inject leaks for detector testing (Penny)
+
+Seed deliberate control failures with a **ground-truth log** to score precision/recall:
+
+```bash
+python -m finance_stream --sink sqlite --seed-source \
+    --inject-leak all --leak-rate 0.1 --leak-log leaks.jsonl --speed 100000
+```
+
+| leak type | how it's woven in | how a detector catches it |
+|-----------|-------------------|---------------------------|
+| `skim` | cash quietly removed → drawer counts short | cash over/short vs expected |
+| `overcharge` | one invoice line billed above agreed price / received qty | three-way match (PO vs receipt vs invoice) |
+| `duplicate_payment` | the same invoice paid a second time | invoice paid >1× |
+
+`--inject-leak` is repeatable (`--inject-leak skim --inject-leak overcharge`) or
+`all`. Every injected leak is appended to the `--leak-log` JSONL (default
+`finance_stream_leaks.jsonl`) as `{leak_type, detect_via, table, ref_id,
+amount_cents, note, …}` — the truth set to grade flags against. Verified: injected
+counts reconcile exactly with what a detector finds in the data.
+
 ## Key options
 
 | flag | default | meaning |
@@ -110,6 +153,10 @@ python -m finance_stream --sink both      # stdout JSONL + sqlite at once
 | `--seed-source` | off | (sqlite) also copy real tables in as `world_<table>` |
 | `--sqlite-path` | `finance_synth.db` | sqlite output file |
 | `--target-dsn` | env `TARGET_DATABASE_URL` | postgres target DSN |
+| `--emit-views` | — | print union-view DDL (`postgres`\|`sqlite`) and exit |
+| `--inject-leak` | off | seed leaks: `skim`\|`overcharge`\|`duplicate_payment`\|`all` (repeatable) |
+| `--leak-rate` | `0.05` | probability an opportunity becomes an injected leak |
+| `--leak-log` | `finance_stream_leaks.jsonl` | ground-truth JSONL of injected leaks |
 
 `Ctrl-C` stops cleanly and flushes any open business day so you always get
 complete rollups.

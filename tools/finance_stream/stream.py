@@ -18,15 +18,16 @@ import argparse
 import datetime as dt
 import heapq
 import itertools
+import json
 import os
 import signal
 import sys
 import time
 from typing import Any, Callable
 
-from . import sinks
+from . import sinks, views
 from .dims import load_dimensions
-from .generator import CLOSE_HOUR, OPEN_HOUR, FinanceSimulator
+from .generator import CLOSE_HOUR, LEAK_TYPES, OPEN_HOUR, FinanceSimulator
 
 UTC = dt.timezone.utc
 # Read-only source for dimensions. NEVER hardcode the DSN (this repo is public);
@@ -132,7 +133,24 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--seed", type=int, default=0, help="RNG seed for reproducibility")
     p.add_argument("--source-dsn", default=SOURCE_DSN,
                    help="read-only source for dimensions (default: env WORLD_PG_URI)")
+    p.add_argument("--emit-views", choices=["postgres", "sqlite"], default=None,
+                   help="print union-view DDL (fin_<table>_all = real UNION ALL synthetic) "
+                        "for the given dialect and exit; no source connection needed")
+    p.add_argument("--inject-leak", action="append", choices=LEAK_TYPES + ["all"], default=None,
+                   metavar="TYPE",
+                   help="seed a deliberate leak scenario for detector testing "
+                        f"({'/'.join(LEAK_TYPES)}/all); repeatable")
+    p.add_argument("--leak-rate", type=float, default=0.05,
+                   help="probability a given opportunity becomes an injected leak (default: 0.05)")
+    p.add_argument("--leak-log", default=None,
+                   help="ground-truth JSONL of injected leaks "
+                        "(default: finance_stream_leaks.jsonl when leaks are enabled)")
     args = p.parse_args(argv)
+
+    # --emit-views is a pure code-gen path: no DB, no source DSN required
+    if args.emit_views:
+        sys.stdout.write(views.build_views(args.emit_views))
+        return 0
 
     if not args.source_dsn:
         p.error("no source DSN — set WORLD_PG_URI in your environment (.env) or pass --source-dsn")
@@ -142,13 +160,29 @@ def main(argv: list[str] | None = None) -> int:
     clock = Clock(sim_start, args.speed)
     sched = Scheduler(clock)
 
+    # resolve enabled leak scenarios + ground-truth sink
+    leaks: set[str] = set()
+    if args.inject_leak:
+        leaks = set(LEAK_TYPES) if "all" in args.inject_leak else set(args.inject_leak)
+    leak_file = None
+    on_leak: Callable[[dict[str, Any]], None] | None = None
+    if leaks:
+        leak_path = args.leak_log or "finance_stream_leaks.jsonl"
+        leak_file = open(leak_path, "a")
+
+        def on_leak(rec: dict[str, Any]) -> None:
+            leak_file.write(json.dumps(rec, default=str) + "\n")
+            leak_file.flush()
+
     print(f"[finance_stream] loading dimensions from source ...", file=sys.stderr)
     dims = load_dimensions(args.source_dsn)
     sink = build_sink(args)
-    sim = FinanceSimulator(dims, sink.emit, seed=args.seed)
+    sim = FinanceSimulator(dims, sink.emit, seed=args.seed,
+                           leaks=leaks, leak_rate=args.leak_rate, on_leak=on_leak)
     rng = sim.rng
+    leak_msg = f" leaks={sorted(leaks)}@{args.leak_rate}" if leaks else ""
     print(f"[finance_stream] {len(dims.stores)} stores, {len(dims.suppliers)} suppliers; "
-          f"speed={args.speed}x sink={args.sink} start={sim_start.isoformat()}",
+          f"speed={args.speed}x sink={args.sink} start={sim_start.isoformat()}{leak_msg}",
           file=sys.stderr)
 
     HOUR = 3600.0
@@ -236,6 +270,10 @@ def main(argv: list[str] | None = None) -> int:
         os.dup2(devnull, sys.stdout.fileno())
     finally:
         sink.close()
+        if leak_file is not None:
+            leak_file.close()
+            print(f"[finance_stream] injected {sim.leak_count} leaks -> "
+                  f"{args.leak_log or 'finance_stream_leaks.jsonl'}", file=sys.stderr)
     return 0
 
 

@@ -39,6 +39,10 @@ SETTLEMENT_FEE_BPS = 226  # blended, from fin_bank_settlements
 PROCESSOR = "cardnet"
 
 EmitFn = Callable[[str, dict[str, Any]], None]
+LeakFn = Callable[[dict[str, Any]], None]
+
+# Injectable leak scenarios (ground truth for scoring a detector like Penny).
+LEAK_TYPES = ["skim", "overcharge", "duplicate_payment"]
 
 
 @dataclass
@@ -53,12 +57,34 @@ class DayState:
 
 
 class FinanceSimulator:
-    def __init__(self, dims: Dimensions, emit: EmitFn, *, seed: int = 0):
+    def __init__(
+        self,
+        dims: Dimensions,
+        emit: EmitFn,
+        *,
+        seed: int = 0,
+        leaks: set[str] | None = None,
+        leak_rate: float = 0.0,
+        on_leak: LeakFn | None = None,
+    ):
         self.dims = dims
         self.emit = emit
         self.rng = random.Random(seed)
         self.day: dict[tuple[str, dt.date], DayState] = {}
-        # AP tables that carry an fk to a store need a store; POs pick one.
+        # leak injection: enabled types, per-opportunity probability, and a sink
+        # for the ground-truth record (so a detector can be scored on it)
+        self.leaks = leaks or set()
+        self.leak_rate = leak_rate
+        self._on_leak = on_leak
+        self.leak_count = 0
+
+    def _fire_leak(self, kind: str) -> bool:
+        return kind in self.leaks and self.rng.random() < self.leak_rate
+
+    def _record_leak(self, rec: dict[str, Any]) -> None:
+        self.leak_count += 1
+        if self._on_leak:
+            self._on_leak(rec)
 
     # ------------------------------------------------------------------ POS
 
@@ -148,6 +174,16 @@ class FinanceSimulator:
         # counted cash = opening float + cash sales - paid outs + small variance
         variance = r.randint(-400, 200)
         counted = 15000 + st.cash_cents - st.paid_out_cents + variance
+        # LEAK: skim — cash quietly removed, so the drawer counts short
+        if st.cash_cents > 0 and self._fire_leak("skim"):
+            skim = min(st.cash_cents, r.randint(2000, 15000))
+            counted -= skim
+            self._record_leak({
+                "leak_type": "skim", "detect_via": "cash_over_short",
+                "table": "fin_cash_counts", "store_id": store, "business_date": d,
+                "amount_cents": skim,
+                "note": f"drawer short ${skim/100:.2f} vs expected cash",
+            })
         self.emit("fin_cash_counts", {
             "store_id": store, "business_date": d,
             "counted_cash_cents": max(0, counted),
@@ -227,18 +263,40 @@ class FinanceSimulator:
 
     def invoice_po(self, po: dict[str, Any], ts: dt.datetime) -> dict[str, Any]:
         """Supplier invoices the received goods (status 'approved')."""
+        r = self.rng
         inv_id = self.dims.next_seq("fin_invoices")
+        # LEAK: overcharge — bill one line above the agreed unit cost (or over the
+        # received qty), so the three-way match (PO vs receipt vs invoice) breaks
+        overcharge_ix = r.randrange(len(po["lines"])) if (po["lines"] and self._fire_leak("overcharge")) else -1
         subtotal = 0
-        for ln in po["lines"]:
+        for i, ln in enumerate(po["lines"]):
             qty = ln.get("received_qty", ln["qty"])
+            unit_cost = ln["unit_cost"]
+            if i == overcharge_ix:
+                mode = r.choice(["price", "qty"])
+                if mode == "price":
+                    unit_cost = int(round(ln["unit_cost"] * r.uniform(1.15, 1.45)))
+                else:
+                    qty = qty + r.randint(int(qty * 0.15) + 1, int(qty * 0.5) + 2)
             invl_id = self.dims.next_seq("fin_invoice_lines")
-            subtotal += int(qty * ln["unit_cost"])
+            line_total = int(qty * unit_cost)
+            subtotal += line_total
             self.emit("fin_invoice_lines", {
                 "id": invl_id, "invoice_id": inv_id, "po_line_id": ln["line_id"],
                 "sku_id": ln["sku_id"], "billed_qty": qty,
-                "billed_unit_cost_cents": ln["unit_cost"],
+                "billed_unit_cost_cents": unit_cost,
                 "description": f'{ln["sku_id"]} delivery',
             })
+            if i == overcharge_ix:
+                fair = int(ln.get("received_qty", ln["qty"]) * ln["unit_cost"])
+                self._record_leak({
+                    "leak_type": "overcharge", "detect_via": "three_way_match",
+                    "table": "fin_invoice_lines", "ref_id": invl_id,
+                    "invoice_id": inv_id, "supplier_id": po["supplier"]["id"],
+                    "amount_cents": line_total - fair,
+                    "note": f'billed {mode} above agreed on {ln["sku_id"]} '
+                            f'(agreed {ln["unit_cost"]}c x {ln.get("received_qty", ln["qty"])})',
+                })
         seq_num = int(self.dims.seq["fin_invoices"])
         invoice_number = f"INV-{4200 + seq_num}"
         self.emit("fin_invoices", {
@@ -254,12 +312,31 @@ class FinanceSimulator:
         """Pay the invoice and flip it to 'paid'; occasionally issue a credit memo."""
         r = self.rng
         seq_num = self.dims.seq["fin_payments_out"] + 1
+        first_pay_id = self.dims.next_seq("fin_payments_out")
         self.emit("fin_payments_out", {
-            "id": self.dims.next_seq("fin_payments_out"),
+            "id": first_pay_id,
             "supplier_id": inv["supplier"]["id"], "invoice_id": inv["invoice_id"],
             "paid_at": ts, "amount_cents": inv["total"], "method": "ach",
             "reference": f"ACH-{8000 + seq_num}",
         })
+        # LEAK: duplicate payment — the SAME invoice is paid a second time
+        if self._fire_leak("duplicate_payment"):
+            seq2 = self.dims.seq["fin_payments_out"] + 1
+            dup_id = self.dims.next_seq("fin_payments_out")
+            dup_ts = ts + dt.timedelta(days=r.randint(1, 6))
+            self.emit("fin_payments_out", {
+                "id": dup_id,
+                "supplier_id": inv["supplier"]["id"], "invoice_id": inv["invoice_id"],
+                "paid_at": dup_ts, "amount_cents": inv["total"], "method": "ach",
+                "reference": f"ACH-{8000 + seq2}",
+            })
+            self._record_leak({
+                "leak_type": "duplicate_payment", "detect_via": "duplicate_payment",
+                "table": "fin_payments_out", "ref_id": dup_id,
+                "invoice_id": inv["invoice_id"], "supplier_id": inv["supplier"]["id"],
+                "amount_cents": inv["total"],
+                "note": f"invoice {inv['invoice_id']} paid twice ({first_pay_id} + {dup_id})",
+            })
         self.emit("fin_invoices", {
             "id": inv["invoice_id"], "supplier_id": inv["supplier"]["id"],
             "po_id": inv["po_id"], "invoice_number": inv["invoice_number"],
