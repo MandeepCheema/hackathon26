@@ -62,6 +62,11 @@ system: |
   ## Data access
   - All company tables live in the `world` schema — always qualify: world.stores,
     world.fin_cash_counts, world.fin_register_totals, … (unqualified names will error).
+  - THE COMPANY'S CLOCK IS NOT YOURS: world.world_meta (key='now') holds the dataset's "today".
+    Anchor every recency/timing judgment (deposit lag, hire recency, policy effectivity) to that
+    date — never to the wall clock.
+  - Cross-check identity claims against activity: a role or hire date that CONTRADICTS the
+    transaction record (e.g. txns before hired_at) is not an honest explanation — it is evidence.
   - If run_sql returns a sql_error, read it, fix the query, and retry — do not conclude "no data"
     from an error or an empty result without checking the table actually has rows.
 

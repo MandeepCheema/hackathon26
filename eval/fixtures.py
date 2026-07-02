@@ -12,7 +12,9 @@ EXPECTED = [
     {"duty":"loss", "entity":"stf_006_5", "status":"refer_investigation"},  # role=cashier, z=2.94, individual
     {"duty":"loss", "entity":"stf_007_4", "status":"refer_investigation"},  # 15/15 of store's no_sale opens = individual (no_sale_opens)
     {"duty":"loss", "entity":"stf_008_2", "status":"refer_investigation"},  # 24 discounts vs peers <=1 (discount_abuse)
-    {"duty":"loss", "entity":"stf_009_6", "status":"clear"},                # role=TRAINEE (hired 2026-06-18) -> honest outlier, do-not-flag
+    {"duty":"loss", "entity":"stf_009_6", "status":"refer_investigation"},  # LAYERED TRAP: 'trainee hired 06-18' is FABRICATED — all 57 txns on 05-27,
+                                                                            # BEFORE the hire date (only staffer like this). 34 voids $612.80 ≈ str_009's
+                                                                            # $610 short. Roster contradiction + void anomaly -> refer
     {"duty":"loss", "entity":"stf_007_8", "status":"clear"},                # MANAGER, 18 refunds to 18 DISTINCT cards = refund desk duty (decoy)
     {"duty":"loss", "entity":"str_004",   "status":"store_wide_clear"},     # 8/8 staff elevated -> store-wide POS outage, not theft
 

@@ -37,6 +37,10 @@ description: Detect a cashier skimming via anomalous void/refund/no-sale pattern
 
    - **Honest-explanation checks before any refer** (world.fin_staff + txn detail):
      * `trainee` (or hired within ~30 days of the anomaly) → honest noise → cleared, coach instead.
+       **VERIFY THE EXCUSE FIRST**: compare `hired_at` to the staffer's ACTUAL activity
+       (min(business_date) of their txns, vs world_meta 'now'). Activity BEFORE the hire date means
+       the roster record is fabricated — the "trainee" defense collapses and the inconsistency is
+       itself evidence → refer_investigation, citing both the anomaly and the roster contradiction.
      * `manager` with high `z_refund_card` → check the refunded `card_last4` values: refunds spread
        across MANY DISTINCT cards with ordinary amounts = doing the refund-desk job → cleared.
        Refunds concentrated on the SAME card(s) = fraud pattern → refer even for a manager.
