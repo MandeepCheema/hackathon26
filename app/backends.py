@@ -86,7 +86,9 @@ async def _agent_session(session_id: str):
     capture = CaptureMCP(MCPClient(os.environ["MCCTX_MCP_URL"], os.environ["MCP_AUTH_TOKEN"]))
     client = ClaudeSDKClient(options=_build_options(system, capture))
     await client.connect()
-    return {"client": client, "capture": capture}
+    # turn_lock serializes turns on this session: two concurrent queries on one
+    # SDK client interleave their response streams and both come back broken.
+    return {"client": client, "capture": capture, "turn_lock": asyncio.Lock()}
 
 
 async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]]:
@@ -99,48 +101,52 @@ async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]
                 _sessions[session_id] = await _agent_session(session_id)
         sess = _sessions[session_id]
         client, capture = sess["client"], sess["capture"]
-        n_before = len(capture.submitted)
-        n_forb = len(getattr(capture, "forbidden", []))
-        n_guard = len(getattr(capture, "guardrails", []))
 
-        await client.query(text)
-        finals: list[str] = []
-        async for msg in client.receive_response():
-            if isinstance(msg, AssistantMessage):
-                for block in msg.content:
-                    if isinstance(block, TextBlock):
-                        finals.append(block.text)
-                    elif isinstance(block, ToolUseBlock):
-                        name = block.name.split("__")[-1]
-                        if name == "run_sql":
-                            yield {"type": "trace", "tool": "run_sql",
-                                   "text": html.escape(str(block.input.get("purpose") or "querying"))}
-                        elif name == "read_skill":
-                            yield {"type": "trace", "tool": "read_skill",
-                                   "text": html.escape(str(block.input.get("duty", "")))}
-                        elif name.startswith("submit_"):
-                            yield {"type": "trace", "tool": name, "text": "recording verdict"}
-            elif isinstance(msg, ResultMessage):
-                break
+        if sess["turn_lock"].locked():
+            yield {"type": "sys", "html": "Penny is finishing your previous question — this one is queued."}
+        async with sess["turn_lock"]:
+            n_before = len(capture.submitted)
+            n_forb = len(getattr(capture, "forbidden", []))
+            n_guard = len(getattr(capture, "guardrails", []))
 
-        # captured verdicts → cases in the rail
-        for sub in capture.submitted[n_before:]:
-            cases.from_verdict_event({"tool": sub["tool"], "args": sub["args"]})
+            await client.query(text)
+            finals: list[str] = []
+            async for msg in client.receive_response():
+                if isinstance(msg, AssistantMessage):
+                    for block in msg.content:
+                        if isinstance(block, TextBlock):
+                            finals.append(block.text)
+                        elif isinstance(block, ToolUseBlock):
+                            name = block.name.split("__")[-1]
+                            if name == "run_sql":
+                                yield {"type": "trace", "tool": "run_sql",
+                                       "text": html.escape(str(block.input.get("purpose") or "querying"))}
+                            elif name == "read_skill":
+                                yield {"type": "trace", "tool": "read_skill",
+                                       "text": html.escape(str(block.input.get("duty", "")))}
+                            elif name.startswith("submit_"):
+                                yield {"type": "trace", "tool": name, "text": "recording verdict"}
+                elif isinstance(msg, ResultMessage):
+                    break
 
-        # guardrail moments — the pitch beat: show what Penny REFUSED and why
-        for f in getattr(capture, "forbidden", [])[n_forb:]:
-            yield {"type": "guardrail", "kind": "scope-fence",
-                   "html": f"<b>Scope fence</b> — refused <code>{html.escape(f['tool'])}</code>: "
-                           "outside Penny's six finance duties. Action was blocked, not executed."}
-        for g in getattr(capture, "guardrails", [])[n_guard:]:
-            gr = "GR1" if "GR1" in g["message"] else ("GR5" if "GR5" in g["message"] else "guardrail")
-            yield {"type": "guardrail", "kind": gr,
-                   "html": f"<b>{gr}</b> — blocked <code>{html.escape(g['tool'])}</code>: "
-                           f"{html.escape(g['message'].split(': ', 1)[-1])}"}
+            # captured verdicts → cases in the rail
+            for sub in capture.submitted[n_before:]:
+                cases.from_verdict_event({"tool": sub["tool"], "args": sub["args"]})
 
-        # raw text — the client renders it as (safely escaped) markdown
-        yield {"type": "verdict", "kind": "clr", "text": "\n".join(finals) or "(no answer)"}
-        store.add_turn(session_id, "penny", "\n".join(finals), {"backend": "agent"})
+            # guardrail moments — the pitch beat: show what Penny REFUSED and why
+            for f in getattr(capture, "forbidden", [])[n_forb:]:
+                yield {"type": "guardrail", "kind": "scope-fence",
+                       "html": f"<b>Scope fence</b> — refused <code>{html.escape(f['tool'])}</code>: "
+                               "outside Penny's six finance duties. Action was blocked, not executed."}
+            for g in getattr(capture, "guardrails", [])[n_guard:]:
+                gr = "GR1" if "GR1" in g["message"] else ("GR5" if "GR5" in g["message"] else "guardrail")
+                yield {"type": "guardrail", "kind": gr,
+                       "html": f"<b>{gr}</b> — blocked <code>{html.escape(g['tool'])}</code>: "
+                               f"{html.escape(g['message'].split(': ', 1)[-1])}"}
+
+            # raw text — the client renders it as (safely escaped) markdown
+            yield {"type": "verdict", "kind": "clr", "text": "\n".join(finals) or "(no answer)"}
+            store.add_turn(session_id, "penny", "\n".join(finals), {"backend": "agent"})
     except Exception as e:  # surface, don't hang the chat
         yield {"type": "verdict", "kind": "flag",
                "html": f"<b>Agent backend error:</b> {html.escape(str(e))} — check MCCTX_MCP_URL / auth, or run with PENNY_BACKEND=sim."}

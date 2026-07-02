@@ -141,7 +141,16 @@ function traceLine(body, tool, text) {
 }
 
 /* ---- streamed turn (shared by ask + why) ---- */
+let busy = false;
+function setBusy(b) {
+  busy = b;
+  $("send").disabled = b;
+  $("send").textContent = b ? "…" : "Ask";
+  $("ask").placeholder = b ? "Penny is investigating — one question at a time…" : "Ask about any store, supplier, invoice or cashier…";
+  document.querySelectorAll(".chip").forEach(ch => ch.disabled = b);
+}
 async function streamInto(body, url, payload) {
+  setBusy(true);
   const spin = document.createElement("div");
   spin.innerHTML = `<span class="dots" style="font-family:var(--mono);font-size:12px;color:var(--mc-accent-blue)">investigating</span>`;
   body.appendChild(spin); scrollDown();
@@ -178,6 +187,8 @@ async function streamInto(body, url, payload) {
     const v = document.createElement("div"); v.className = "pverdict flag";
     v.innerHTML = `<b>Connection problem:</b> ${esc(e.message)}`;
     body.appendChild(v); scrollDown();
+  } finally {
+    spin.remove(); setBusy(false);
   }
 }
 function enterChatMode() {
@@ -185,7 +196,10 @@ function enterChatMode() {
   document.body.classList.remove("hero-mode");
   document.body.classList.add("chat-mode");
 }
-function askPenny(q) { enterChatMode(); userMsg(q); streamInto(pennyMsg(""), "/turn", { session_id: SESSION, text: q }); }
+function askPenny(q) {
+  if (busy) { sysMsg("One at a time — Penny is mid-investigation. She'll be right with you."); return; }
+  enterChatMode(); userMsg(q); streamInto(pennyMsg(""), "/turn", { session_id: SESSION, text: q });
+}
 
 /* ---- drawer ---- */
 const drawer = $("drawer"), scrim = $("scrim"), menuBtn = $("menuBtn");
@@ -226,7 +240,10 @@ async function openCase(id) {
   body.appendChild(w); scrollDown();
   w.querySelector("[data-act=confirm]").onclick = () => actCase(w, k, "confirm");
   w.querySelector("[data-act=dismiss]").onclick = () => actCase(w, k, "dismiss");
-  w.querySelector("[data-act=why]").onclick = () => streamInto(pennyMsg(""), `/cases/${k.id}/why`, { session_id: SESSION });
+  w.querySelector("[data-act=why]").onclick = () => {
+    if (busy) { sysMsg("One at a time — Penny is mid-investigation."); return; }
+    streamInto(pennyMsg(""), `/cases/${k.id}/why`, { session_id: SESSION });
+  };
 }
 async function actCase(w, k, action) {
   const res = await fetch(`/cases/${k.id}/${action}`, { method: "POST" });
