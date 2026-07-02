@@ -16,3 +16,13 @@ def test_str004_reads_as_store_wide():
     # more than one str_004 staffer is a high-void outlier → store-wide signal, not one bad actor
     highs = [r for r in rows if r["void_rate"] > 0.45]
     assert len(highs) >= 3
+
+@pytest.mark.integration
+def test_all_five_signals_have_zscores():
+    c = MCPClient(os.environ["MCCTX_MCP_URLD".replace("D","")], os.environ["MCP_AUTH_TOKEN"])
+    rows = {r["staff_id"]: r for r in c.run_sql(SQL, "loss candidates")}
+    for col in ("z_void", "z_refund_card", "z_no_sale", "z_discount"):
+        assert col in rows["stf_009_6"]
+    assert rows["stf_007_4"]["z_no_sale"] > 2.5        # no-sale opener
+    assert rows["stf_007_8"]["z_refund_card"] > 2.5    # manager refund decoy (surfaced, then cleared by role+cards)
+    assert rows["stf_008_2"]["z_discount"] > 2.5       # discount abuser

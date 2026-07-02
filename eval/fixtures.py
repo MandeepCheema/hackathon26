@@ -10,7 +10,10 @@ EXPECTED = [
     # Loss prevention — individual skimmer vs peer baseline, honest outliers cleared:
     {"duty":"loss", "entity":"stf_006_3", "status":"refer_investigation"},  # role=cashier, z=3.62, 2-of-8 at store = individual
     {"duty":"loss", "entity":"stf_006_5", "status":"refer_investigation"},  # role=cashier, z=2.94, individual
+    {"duty":"loss", "entity":"stf_007_4", "status":"refer_investigation"},  # 15/15 of store's no_sale opens = individual (no_sale_opens)
+    {"duty":"loss", "entity":"stf_008_2", "status":"refer_investigation"},  # 24 discounts vs peers <=1 (discount_abuse)
     {"duty":"loss", "entity":"stf_009_6", "status":"clear"},                # role=TRAINEE (hired 2026-06-18) -> honest outlier, do-not-flag
+    {"duty":"loss", "entity":"stf_007_8", "status":"clear"},                # MANAGER, 18 refunds to 18 DISTINCT cards = refund desk duty (decoy)
     {"duty":"loss", "entity":"str_004",   "status":"store_wide_clear"},     # 8/8 staff elevated -> store-wide POS outage, not theft
 
     # three-way-match (6 real exceptions — pol_00150 is a TRAP: its $64.80 over-billing is

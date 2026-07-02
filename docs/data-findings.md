@@ -15,7 +15,7 @@
 | Duty | Real finding | Decoy (do NOT flag) |
 |---|---|---|
 | **Cash over/short** | `str_009` −$610 (t=−3.8), `str_003` −$569 (t=−3.8) → `pattern_short`. `expected = cash_sales − paid_outs`. | Single-day one-offs; sub-$5 noise (269 store-days); `str_001` +$27 *over*. |
-| **Loss prevention** | `stf_009_6` @ str_009 = 0.61 void rate vs 0.17 peer → `refer_investigation`; **corroborates str_009 cash short**. | `str_004` high-void *cluster* = store-wide (POS) → `clear`/`monitor`. |
+| **Loss prevention** | 4 refers across ALL FIVE signals: `stf_006_3`/`stf_006_5` (void_rate), `stf_007_4` (no_sale_opens — 15/15 of the store's drawer opens), `stf_008_2` (discount_abuse — 24 vs peers ≤1). | `str_004` store-wide void cluster (POS); `stf_009_6` trainee (voids = learning); **`stf_007_8` manager with 18 card refunds to 18 DISTINCT cards = refund-desk duty** — same-card concentration would flip it to fraud. |
 | **Settlement** | **7** store-days, **$905** unreconciled after fees AND logged adjustments. | 3 adjustment-explained decoys (str_008 03-02 terminal_reset, str_010 03-16 refund batch, str_010 03-17 chargeback — residual $0); plain fee/timing gaps. |
 | **Three-way match** | **6** policy-aware exceptions, **~$311**. | pol_00150: over-billing exactly covered by credit memo memo_00001 (engineered trap); lines within materiality/tolerance (pol_00037/090/148). |
 | **Duplicate payment** | **0** in visible data (0 po-lines double-billed, 0 invoices paid twice). | 55 recurring same-amount payments (distinct invoices, weekly cadence). Real dups only in hidden bench cases. |
