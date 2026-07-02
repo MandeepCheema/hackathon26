@@ -1,340 +1,1035 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Penny — the AI that watches every register, so you don't have to</title>
-<meta name="description" content="Penny is the AI money-watcher for multi-location retail and restaurants. It catches the cash shortfalls, overbilled invoices, and register fraud leaking from your stores — and tells the real problems apart from the noise.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penny — Finance & Controls Agent · Every store. Every signal. Every penny.</title>
+<meta name="description" content="Penny is a detection-only agent for finance & controls. It runs autonomously across every store on the right cadence for each signal — and flags only what survives scrutiny.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0b10; --bg2:#0e1018; --panel:#14161f; --panel2:#191c28; --line:#242838;
-  --ink:#f2f4fa; --mut:#9aa1b4; --dim:#6b7186;
-  --brand:#7c6cff; --brand2:#a897ff; --leak:#ff6b5e; --cash:#3ddc97; --warn:#ffb454;
-  --serif:"Fraunces",Georgia,"Times New Roman",serif;
-  --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ink:#16130F; --bone:#FAF7F1; --crimson:#9E2B25; --ember:#C2503F;
+  --graphite:#6E675E; --green:#1F6B4F; --hairline:#E4DED3; --paper:#FFFFFF;
+  --disp:'Archivo',sans-serif; --mono:'IBM Plex Mono',monospace;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{background:var(--bone);color:var(--ink);font-family:var(--disp);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
-.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
 .mono{font-family:var(--mono)}
+h1,h2,.dtitle{font-weight:800;font-stretch:125%;text-transform:uppercase;letter-spacing:1px;line-height:1.06}
+h1{font-size:clamp(44px,7vw,84px)}
+h2{font-size:clamp(26px,3.6vw,42px)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:4px;color:var(--crimson);font-weight:600;text-transform:uppercase}
+.seal{height:9px;width:88px;background:var(--ink);border-radius:5px;margin:22px 0 20px}
+.lead{font-size:18px;color:var(--graphite);max-width:640px}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){.rv{opacity:1;transform:none;transition:none} *{animation:none!important}}
 
-nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(10,11,16,.72);border-bottom:1px solid var(--line)}
-nav .wrap{display:flex;align-items:center;gap:26px;height:64px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em}
-.logo .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--leak));display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:19px;color:#fff;box-shadow:0 4px 18px rgba(124,108,255,.5)}
-nav .links{display:flex;gap:22px;margin-left:auto;font-size:14px;color:var(--mut)}
-nav .links a:hover{color:var(--ink)}
-.btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--brand),#6a5aff);color:#fff;font-weight:600;font-size:14px;padding:11px 20px;border-radius:11px;border:0;cursor:pointer;box-shadow:0 6px 22px rgba(124,108,255,.4);transition:transform .15s,box-shadow .15s}
-.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(124,108,255,.55)}
-.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--ink)}
-.btn.ghost:hover{border-color:var(--brand2);background:rgba(124,108,255,.08)}
+/* ---------- nav ---------- */
+nav{position:sticky;top:0;z-index:50;background:rgba(250,247,241,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--hairline)}
+nav .wrap{display:flex;align-items:center;gap:30px;height:72px}
+.lockup{display:flex;align-items:center;gap:11px;font-weight:800;font-stretch:125%;font-size:21px;letter-spacing:2px}
+.lockup svg{display:block}
+nav .links{display:flex;gap:26px;margin-left:auto;font-size:14px;font-weight:600;letter-spacing:.5px}
+nav .links a{color:var(--graphite);padding:6px 0;position:relative}
+nav .links a::after{content:"";position:absolute;left:0;right:100%;bottom:-2px;height:5px;border-radius:3px;background:var(--crimson);transition:right .2s}
+nav .links a.active,nav .links a:hover{color:var(--ink)}
+nav .links a.active::after{right:0}
+.btn{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:var(--bone);font-weight:700;font-size:14px;letter-spacing:1px;padding:13px 24px;border-radius:8px;border:0;cursor:pointer;transition:background .15s;font-family:var(--disp)}
+.btn:hover{background:var(--crimson)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn.ghost:hover{background:transparent;color:var(--crimson);border-color:var(--crimson)}
 @media(max-width:760px){nav .links{display:none}}
 
-.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,1,.3,1),transform .7s cubic-bezier(.2,1,.3,1)}
-.rv.in{opacity:1;transform:none}
+/* ---------- pages ---------- */
+.page{display:none}
+.page.show{display:block}
+section{padding:84px 0}
+section.tight{padding:56px 0}
+.dark{background:var(--ink);color:var(--bone)}
+.dark .lead{color:#B9B2A6}
+.dark .seal{background:var(--bone)}
 
-.hero{position:relative;padding:92px 0 56px;text-align:center;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;background:
-  radial-gradient(700px 420px at 50% -8%,rgba(124,108,255,.28),transparent 62%),
-  radial-gradient(560px 360px at 82% 22%,rgba(255,107,94,.15),transparent 60%),
-  radial-gradient(560px 360px at 15% 32%,rgba(61,220,151,.12),transparent 60%);pointer-events:none}
-.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand2);border:1px solid var(--line);border-radius:999px;padding:7px 15px;background:var(--panel)}
-.pulse{width:8px;height:8px;border-radius:50%;background:var(--cash);animation:pl 2s infinite}
-@keyframes pl{0%{box-shadow:0 0 0 0 rgba(61,220,151,.6)}70%{box-shadow:0 0 0 10px rgba(61,220,151,0)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
-h1{font-family:var(--serif);font-weight:600;font-size:clamp(40px,6.4vw,80px);line-height:1.03;letter-spacing:-.03em;margin:24px 0 0}
-h1 .grad{background:linear-gradient(120deg,var(--brand2),var(--leak) 70%);-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic}
-.sub{font-size:clamp(17px,2vw,21px);color:var(--mut);max-width:58ch;margin:22px auto 0;line-height:1.6}
-.cta{display:flex;gap:14px;justify-content:center;margin-top:32px;flex-wrap:wrap}
-.hero-note{margin-top:18px;font-size:13px;color:var(--dim)}
+/* ---------- hero ---------- */
+.hero{padding:72px 0 64px}
+.hero .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+@media(max-width:880px){.hero .grid{grid-template-columns:1fr}}
+.hero h1 .accent{color:var(--crimson)}
+.hero .sub{font-size:19px;color:var(--graphite);max-width:52ch;margin-top:22px}
+.hero .ctas{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap;align-items:center}
+.capture{display:flex;gap:0;margin-top:18px;max-width:420px;border:2px solid var(--ink);border-radius:8px;overflow:hidden}
+.capture input{flex:1;border:0;padding:12px 14px;font-family:var(--disp);font-size:14px;background:var(--paper);outline:none;min-width:0}
+.capture button{border:0;background:var(--ink);color:var(--bone);font-family:var(--mono);font-size:12px;letter-spacing:2px;padding:0 18px;cursor:pointer}
+.capture button:hover{background:var(--crimson)}
+.capture-note{font-family:var(--mono);font-size:11.5px;color:var(--graphite);margin-top:8px;letter-spacing:.5px}
 
-.demo{margin:54px auto 0;max-width:900px;background:linear-gradient(180deg,var(--panel),#101219);border:1px solid var(--line);border-radius:18px;box-shadow:0 40px 120px rgba(0,0,0,.55);overflow:hidden;text-align:left}
-.demo .bar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--line);background:#0d0f16}
-.dot{width:11px;height:11px;border-radius:50%}
-.demo .title{margin-left:12px;font-size:13px;color:var(--mut);font-family:var(--mono)}
-.demo .body{display:grid;grid-template-columns:1fr 1fr}
-@media(max-width:680px){.demo .body{grid-template-columns:1fr}}
-.lane{padding:20px}
-.lane.left{border-right:1px solid var(--line)}
-.lane h4{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.lane.left h4{color:var(--leak)} .lane.right h4{color:var(--cash)}
-.row{display:flex;align-items:flex-start;gap:12px;padding:12px 13px;border-radius:11px;background:var(--panel2);margin-bottom:9px;border:1px solid var(--line)}
-.row .amt{font-family:var(--serif);font-size:19px;font-weight:600;min-width:70px}
-.row.leak .amt{color:var(--leak)} .row.ok .amt{color:var(--cash);font-size:14px;min-width:70px}
-.row .txt{font-size:13px;line-height:1.4}.row .txt small{display:block;color:var(--dim);font-size:11.5px;margin-top:3px}
+/* receipt */
+.receipt-scene{position:relative;display:flex;justify-content:center;align-items:flex-start;gap:0}
+.receipt{background:var(--paper);width:320px;padding:26px 24px 30px;border:1px solid var(--hairline);border-radius:4px 4px 0 0;box-shadow:0 24px 60px rgba(22,19,15,.14);font-family:var(--mono);font-size:13px;position:relative}
+.receipt::after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;
+  background:linear-gradient(-45deg,transparent 8px,var(--paper) 0) 0 0/24px 12px repeat-x}
+.receipt .rhead{text-align:center;border-bottom:2px dashed var(--hairline);padding-bottom:14px;margin-bottom:14px}
+.receipt .rhead .rname{font-weight:600;letter-spacing:3px}
+.receipt .rhead .rsub{font-size:11px;color:var(--graphite);margin-top:4px}
+.ritem{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dotted var(--hairline);opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+.ritem.printed{opacity:1;transform:none}
+.ritem .rl{line-height:1.45}
+.ritem .rl small{display:block;color:var(--graphite);font-size:11px;margin-top:2px}
+.ritem .rv2{font-weight:600;white-space:nowrap}
+.ritem.flag .rv2{color:var(--crimson)}
+.ritem.clear .rv2{color:var(--green)}
+.ritem.clear .rl b{position:relative}
+.ritem.clear .rl b::after{content:"";position:absolute;left:-2px;right:-2px;top:52%;height:4px;border-radius:2px;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .5s .25s}
+.ritem.printed.clear .rl b::after{transform:scaleX(1)}
+.rtotal{display:flex;justify-content:space-between;font-weight:600;padding-top:12px;margin-top:6px;border-top:2px dashed var(--hairline)}
+.rfoot{text-align:center;font-size:10.5px;color:var(--graphite);margin-top:14px;letter-spacing:1px}
+.avatar-holder{position:absolute;right:-44px;bottom:-26px;width:132px;filter:drop-shadow(0 12px 26px rgba(22,19,15,.22))}
+@media(max-width:880px){.avatar-holder{right:-8px}}
 
-.logos{padding:30px 0 8px;text-align:center}
-.logos .cap{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
-.logos .row2{display:flex;gap:34px;justify-content:center;flex-wrap:wrap;margin-top:20px;opacity:.72}
-.logos .brand{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--mut);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
-.logos .brand span{font-size:22px}
+/* ---------- stats band ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:760px){.stats{grid-template-columns:1fr 1fr}}
+.stat{border:1px solid var(--hairline);background:var(--paper);border-radius:12px;padding:22px 18px;text-align:center}
+.stat .n{font-family:var(--mono);font-weight:600;font-size:clamp(24px,3.4vw,36px);color:var(--crimson);letter-spacing:-1px}
+.stat .l{font-size:13px;color:var(--graphite);margin-top:6px;line-height:1.45}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:36px 0 8px}
-@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{text-align:center;padding:22px 14px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
-.stat .n{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4vw,42px);letter-spacing:-.02em}
-.stat .n.g{color:var(--cash)} .stat .n.r{color:var(--leak)} .stat .n.v{color:var(--brand2)} .stat .n.w{color:var(--warn)}
-.stat .l{font-size:12.5px;color:var(--mut);margin-top:6px}
-
-section{padding:82px 0}
-.tag{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand2)}
-h2{font-family:var(--serif);font-weight:600;font-size:clamp(30px,4.4vw,52px);letter-spacing:-.025em;line-height:1.07;margin:14px 0 0}
-.lead{color:var(--mut);font-size:18px;max-width:62ch;margin:18px 0 0;line-height:1.6}
-.center{text-align:center;margin-left:auto;margin-right:auto}
-
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+/* ---------- problem ---------- */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:38px}
 @media(max-width:820px){.grid3{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;transition:transform .2s,border-color .2s}
-.card:hover{transform:translateY(-4px);border-color:var(--brand)}
-.card .ic{font-size:26px}.card h3{font-size:19px;margin:14px 0 8px;letter-spacing:-.01em}
-.card p{color:var(--mut);font-size:14.5px;line-height:1.55}
-.card .big{font-family:var(--serif);font-size:26px;color:var(--leak);font-weight:600;margin-bottom:4px}
+.pcard{background:var(--paper);border:1px solid var(--hairline);border-radius:14px;padding:26px}
+.pcard .big{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--crimson)}
+.pcard h3{font-size:17px;margin:12px 0 8px;font-weight:700}
+.pcard p{font-size:14.5px;color:var(--graphite)}
 
-.watch{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:44px}
-@media(max-width:820px){.watch{grid-template-columns:1fr 1fr}}
-.wc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
-.wc .ic{font-size:24px}.wc h4{font-size:16px;margin:12px 0 6px}.wc p{font-size:13px;color:var(--mut);line-height:1.5}
+/* ---------- trust ---------- */
+.trust-state{font-size:clamp(24px,3.4vw,40px);font-weight:800;font-stretch:125%;text-transform:uppercase;letter-spacing:1px;line-height:1.25;max-width:820px}
+.trust-state em{font-style:normal;color:var(--ember)}
+.trust-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:42px}
+@media(max-width:820px){.trust-cols{grid-template-columns:1fr}}
+.tcard{border:1px solid #3A352C;border-radius:12px;padding:24px;background:#1E1A15}
+.tcard h4{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--ember);margin-bottom:10px}
+.tcard p{font-size:14.5px;color:#CFC8BB}
 
-.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
-@media(max-width:820px){.steps3{grid-template-columns:1fr}}
-.s3{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px}
-.s3 .num{font-family:var(--serif);font-size:34px;font-weight:600;color:var(--brand2)}
-.s3 h3{font-size:19px;margin:8px 0 8px}.s3 p{color:var(--mut);font-size:14px}
+/* ---------- duties tabs ---------- */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:36px}
+.tab{font-family:var(--mono);font-size:12.5px;letter-spacing:1px;padding:11px 16px;border:1.5px solid var(--hairline);border-radius:8px;background:var(--paper);cursor:pointer;color:var(--graphite);transition:all .15s}
+.tab:hover{border-color:var(--ink);color:var(--ink)}
+.tab.on{background:var(--ink);border-color:var(--ink);color:var(--bone)}
+.panel{display:none;margin-top:26px;background:var(--paper);border:1px solid var(--hairline);border-radius:16px;padding:34px}
+.panel.on{display:grid;grid-template-columns:1.2fr .8fr;gap:36px}
+@media(max-width:820px){.panel.on{grid-template-columns:1fr}}
+.panel .dtitle{font-size:22px;margin-bottom:6px}
+.panel .oneline{color:var(--graphite);font-size:15.5px;margin-bottom:20px}
+.vs{display:grid;gap:12px}
+.vs .vrow{border-left:4px solid var(--hairline);padding:2px 0 2px 16px}
+.vs .vrow.penny{border-left-color:var(--crimson)}
+.vs .vlabel{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--graphite)}
+.vs .vrow.penny .vlabel{color:var(--crimson)}
+.vs p{font-size:14.5px;margin-top:4px}
+.proof{background:var(--bone);border-radius:12px;padding:22px;align-self:start}
+.proof .pn{font-family:var(--mono);font-weight:600;font-size:24px;color:var(--crimson)}
+.proof .pl{font-size:13px;color:var(--graphite);margin-top:4px}
+.proof blockquote{margin-top:18px;padding-top:16px;border-top:1px solid var(--hairline);font-size:14px;line-height:1.55}
+.proof cite{display:block;font-style:normal;font-family:var(--mono);font-size:11px;color:var(--graphite);margin-top:8px;letter-spacing:.5px}
 
-.split{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;margin-top:40px}
-@media(max-width:860px){.split{grid-template-columns:1fr;gap:30px}}
-.feat h3{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-.02em;line-height:1.1}
-.feat p{color:var(--mut);margin-top:14px;font-size:16px;line-height:1.6}
-.feat ul{list-style:none;margin-top:18px}
-.feat li{display:flex;gap:11px;padding:9px 0;font-size:14.5px;border-bottom:1px solid var(--line)}
-.feat li b{color:var(--cash)}
-.viz{background:linear-gradient(180deg,var(--panel),#0e1019);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.4)}
-.tierrow{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);margin-bottom:11px}
-.pill{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:4px 9px;border-radius:20px;white-space:nowrap}
-.pill.g{background:rgba(61,220,151,.14);color:var(--cash)} .pill.w{background:rgba(255,180,84,.14);color:var(--warn)} .pill.r{background:rgba(255,107,94,.14);color:var(--leak)}
-.tierrow .t{font-size:13.5px}.tierrow .t small{display:block;color:var(--dim);font-size:11.5px}
+/* ---------- customers ---------- */
+.slabs{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:38px}
+@media(max-width:760px){.slabs{grid-template-columns:1fr}}
+.slab{background:var(--paper);border:1px solid var(--hairline);border-radius:14px;padding:26px}
+.slab .sv{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--graphite)}
+.slab h3{font-size:19px;margin:8px 0 4px;font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:1px}
+.slab .outcome{font-family:var(--mono);font-weight:600;font-size:22px;color:var(--green);margin:10px 0 2px}
+.slab .prob{font-size:14px;color:var(--graphite)}
+.slab blockquote{font-size:14.5px;margin-top:14px;padding-top:14px;border-top:1px solid var(--hairline)}
+.fict{font-family:var(--mono);font-size:11px;color:var(--graphite);letter-spacing:.5px;margin-top:24px}
 
-.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
-@media(max-width:820px){.quotes{grid-template-columns:1fr}}
-.quote{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;display:flex;flex-direction:column}
-.quote p{font-size:15.5px;line-height:1.55;color:var(--ink)}
-.quote .who{display:flex;align-items:center;gap:12px;margin-top:20px}
-.quote .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--leak));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
-.quote .nm{font-size:13.5px;font-weight:600}.quote .rl{font-size:12px;color:var(--dim)}
-.stars{color:var(--warn);font-size:14px;margin-bottom:12px}
+/* ---------- events ---------- */
+.next{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:38px}
+@media(max-width:820px){.next{grid-template-columns:1fr}}
+.ncard{background:var(--paper);border:1px solid var(--hairline);border-radius:14px;padding:28px}
+.ncard .ntag{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--crimson)}
+.ncard h3{font-size:20px;margin:10px 0 8px;font-weight:800;font-stretch:115%;text-transform:uppercase}
+.ncard p{font-size:14.5px;color:var(--graphite)}
+.wplist{display:grid;gap:10px;margin-top:16px}
+.wprow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 16px;border:1px solid var(--hairline);border-radius:9px;font-size:14px}
+.wprow .wt{font-weight:600}
+.wprow a{font-family:var(--mono);font-size:12px;color:var(--crimson);letter-spacing:1px;white-space:nowrap}
 
-.trust{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:44px}
-@media(max-width:820px){.trust{grid-template-columns:1fr 1fr}}
-.tcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
-.tcard .ic{font-size:22px}.tcard h4{font-size:15px;margin:12px 0 6px}.tcard p{font-size:13px;color:var(--mut)}
+/* ---------- resources ---------- */
+.rgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:38px}
+@media(max-width:820px){.rgrid{grid-template-columns:1fr}}
+.rcard{background:var(--paper);border:1px solid var(--hairline);border-radius:14px;padding:26px}
+.rcard .duty{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--crimson)}
+.rcard h3{font-size:18px;margin:10px 0;font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:.5px}
+.rcard details{margin-top:6px}
+.rcard summary{font-family:var(--mono);font-size:12px;letter-spacing:1px;color:var(--graphite);cursor:pointer;padding:6px 0}
+.rcard summary:hover{color:var(--ink)}
+.rcard .rt{font-size:14px;padding:8px 0 4px;color:var(--ink)}
+.rcard .rt b{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;color:var(--graphite);display:block;margin-bottom:3px;font-weight:500}
 
-.ctaband{background:linear-gradient(120deg,rgba(124,108,255,.16),rgba(255,107,94,.12));border:1px solid var(--line);border-radius:24px;padding:56px 32px;text-align:center;overflow:hidden}
-.ctaband h2{font-size:clamp(28px,4vw,46px)}
-footer{border-top:1px solid var(--line);padding:44px 0;color:var(--dim);font-size:13px}
-footer .wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
-footer a{color:var(--mut)}footer a:hover{color:var(--ink)}
-.badge{font-family:var(--mono);font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+/* ---------- talk to us ---------- */
+.formwrap{max-width:520px;margin:38px auto 0;background:var(--paper);border:1px solid var(--hairline);border-radius:16px;padding:36px}
+.field{margin-bottom:18px}
+.field label{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:2px;color:var(--graphite);margin-bottom:7px;text-transform:uppercase}
+.field input,.field select{width:100%;padding:13px 14px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--disp);font-size:15px;background:var(--bone);outline:none}
+.field input:focus,.field select:focus{border-color:var(--ink)}
+.formnote{font-family:var(--mono);font-size:11.5px;color:var(--graphite);text-align:center;margin-top:14px;letter-spacing:.5px}
+.sent{display:none;text-align:center;padding:30px 0 10px}
+.sent .big{font-size:26px;font-weight:800;font-stretch:125%;text-transform:uppercase}
+
+/* ---------- footer ---------- */
+footer{background:var(--ink);color:var(--bone);padding:52px 0 40px;margin-top:40px}
+footer .frow{display:flex;gap:36px;align-items:center;flex-wrap:wrap}
+footer .flinks{display:flex;gap:22px;font-size:13px;color:#B9B2A6;margin-left:auto}
+footer .flinks a:hover{color:var(--bone)}
+footer .strip{display:flex;gap:28px;flex-wrap:wrap;margin-top:30px;padding-top:26px;border-top:1px solid #3A352C;font-family:var(--mono);font-size:12px;letter-spacing:2px;color:#7E776C}
+footer .legal{margin-top:26px;font-size:12px;color:#7E776C}
+.bt-lockup{display:flex;align-items:center;gap:10px;font-weight:800;font-stretch:125%;letter-spacing:2px;font-size:14px}
+
+/* ---------- avatar animations ---------- */
+.p-eye{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+.p-pupils{animation:scan 7s ease-in-out infinite}
+.p-glint{animation:glint 6s ease-in-out infinite}
+@keyframes blink{0%,90%,100%{transform:scaleY(1)}93%,95%{transform:scaleY(.08)}97%{transform:scaleY(1)}}
+@keyframes scan{0%,35%,100%{transform:translateX(0)}45%,60%{transform:translateX(-6px)}70%,85%{transform:translateX(6px)}}
+@keyframes glint{0%,78%,100%{transform:translateX(-80px) rotate(-20deg);opacity:0}84%{opacity:.55}92%{transform:translateX(100px) rotate(-20deg);opacity:0}}
+
+/* ---------- v2: chapters band ---------- */
+.ch-tabs{display:flex;gap:14px;flex-wrap:wrap}
+.ch-tab{flex:1;min-width:170px;background:none;border:0;cursor:pointer;text-align:left;padding:0;color:#7E776C}
+.ch-tab .ch-k{font-family:var(--mono);font-size:12px;letter-spacing:2.5px;display:block;margin-bottom:10px;transition:color .2s}
+.ch-tab.on .ch-k,.ch-tab:hover .ch-k{color:var(--bone)}
+.ch-bar{display:block;height:5px;background:#3A352C;border-radius:3px;overflow:hidden}
+.ch-bar i{display:block;height:100%;width:0;background:var(--ember);border-radius:3px}
+.ch-tab.on .ch-bar i{animation:chfill 6s linear forwards}
+#story:hover .ch-bar i{animation-play-state:paused}
+@keyframes chfill{to{width:100%}}
+.ch-stage{display:grid;margin-top:40px}
+.ch{grid-column:1;grid-row:1;opacity:0;transform:translateY(14px);pointer-events:none;transition:opacity .45s ease,transform .45s ease}
+.ch.on{opacity:1;transform:none;pointer-events:auto}
+.ch h2 em{font-style:normal;color:var(--ember)}
+.ch p{color:#B9B2A6;margin-top:14px;font-size:17px;max-width:56ch}
+.ch-chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.chip{font-family:var(--mono);font-size:12px;letter-spacing:1.5px;padding:11px 15px;border:1px solid #3A352C;border-radius:8px;color:#CFC8BB;background:#1E1A15;opacity:0;transform:translateY(8px)}
+.ch.on .chip{animation:chippop .4s ease forwards}
+.ch.on .chip:nth-child(2){animation-delay:.1s}
+.ch.on .chip:nth-child(3){animation-delay:.2s}
+.ch.on .chip:nth-child(4){animation-delay:.3s}
+@keyframes chippop{to{opacity:1;transform:none}}
+.flow{height:3px;margin-top:26px;max-width:460px;background:repeating-linear-gradient(90deg,var(--ember) 0 14px,transparent 14px 26px);background-size:26px 3px;animation:flowmove 1s linear infinite;border-radius:2px}
+@keyframes flowmove{to{background-position:26px 0}}
+.tk-f{color:var(--ember);font-weight:600}.tk-c{color:#4CAF87;font-weight:600}.tk-a{color:#C9A24B;font-weight:600}
+/* ---------- v2: ticker ---------- */
+.ticker-wrap{overflow:hidden;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);background:var(--paper);margin-top:44px}
+.ticker{display:flex;width:max-content;animation:tickmove 38s linear infinite}
+.ticker span{display:flex}
+.ticker i{font-style:normal;font-family:var(--mono);font-size:12px;letter-spacing:1.5px;color:var(--graphite);padding:13px 26px;white-space:nowrap;border-right:1px solid var(--hairline)}
+.ticker-wrap:hover .ticker{animation-play-state:paused}
+@keyframes tickmove{to{transform:translateX(-50%)}}
+/* ---------- v2: scroll progress ---------- */
+#progress{position:fixed;top:0;left:0;height:4px;width:0;background:var(--crimson);z-index:80;border-radius:0 2px 2px 0;transition:width .1s linear}
+/* ---------- v2: page + panel transitions ---------- */
+.page.show{animation:pagein .4s ease}
+.panel.on{animation:pagein .3s ease}
+@keyframes pagein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* ---------- v2: hover lift + seal draw ---------- */
+.slab,.rcard,.stat,.ncard{transition:transform .2s ease,border-color .2s ease}
+.slab:hover,.rcard:hover,.stat:hover,.ncard:hover{transform:translateY(-3px);border-color:var(--ink)}
+.receipt{cursor:pointer;transition:transform .25s ease}
+.receipt:hover{transform:rotate(-.5deg) translateY(-2px)}
+.seal.rv{opacity:1;transform:scaleX(0);transform-origin:left;transition:transform .8s ease .15s}
+.seal.rv.in{transform:scaleX(1)}
+@media (prefers-reduced-motion: reduce){.ticker,.flow,.ch-bar i{animation:none!important}#progress{display:none}}
+
+.cadge{font-family:var(--mono);font-size:10.5px;letter-spacing:2px;color:var(--bone);background:var(--ink);padding:5px 11px;border-radius:6px;display:inline-block;margin-bottom:12px}
+/* ---------- v3: demo page ---------- */
+.demo-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:start}
+@media(max-width:860px){.demo-grid{grid-template-columns:1fr}}
+.expect{list-style:none;margin-top:26px;display:grid;gap:14px}
+.expect li{position:relative;padding-left:30px;font-size:15px;color:var(--graphite);line-height:1.55}
+.expect li b{color:var(--ink)}
+.expect li::before{content:"";position:absolute;left:0;top:9px;width:18px;height:6px;border-radius:3px;background:var(--crimson)}
+.demo-quote{margin-top:30px;border-left:4px solid var(--crimson);padding-left:18px}
+.demo-quote blockquote{font-size:15.5px;line-height:1.55}
+.demo-quote cite{display:block;font-style:normal;font-family:var(--mono);font-size:11px;color:var(--graphite);margin-top:8px;letter-spacing:1px}
+.demo-logos{margin-top:28px;font-family:var(--mono);font-size:11.5px;letter-spacing:2px;color:#B0A99C}
+.formhead{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--crimson);margin-bottom:20px}
+.field input::placeholder{color:#B0A99C}
+
+/* ---------- v4: team page ---------- */
+.origin{max-width:760px;margin-top:8px}
+.origin p{font-size:17px;line-height:1.7;color:#2A251E;margin-bottom:16px}
+.origin .penny-name{color:var(--graphite);font-size:15.5px;border-left:4px solid var(--crimson);padding-left:16px}
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+@media(max-width:860px){.team-grid{grid-template-columns:1fr}}
+.tmate{background:var(--paper);border:1px solid var(--hairline);border-radius:16px;padding:24px;transition:transform .2s,border-color .2s}
+.tmate:hover{transform:translateY(-3px);border-color:var(--ink)}
+.tmate svg{border-radius:14px;display:block}
+.tmate h3{font-size:19px;font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:1px;margin:16px 0 4px}
+.trole{font-family:var(--mono);font-size:11px;letter-spacing:2.5px;color:var(--crimson);margin-bottom:12px}
+.tmate p{font-size:14.5px;color:var(--graphite);line-height:1.6}
+.culture{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+@media(max-width:860px){.culture{grid-template-columns:1fr}}
+.cul{background:var(--ink);color:var(--bone);border-radius:14px;padding:24px}
+.cul h4{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--ember);margin-bottom:10px}
+.cul p{font-size:14.5px;color:#CFC8BB;line-height:1.6}
+
+/* ---------- v5: context layer / how it works ---------- */
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px}
+@media(max-width:860px){.loop{grid-template-columns:1fr 1fr}}
+.lstep{background:var(--paper);border:1px solid var(--hairline);border-radius:12px;padding:20px 18px;position:relative;transition:transform .2s,border-color .2s}
+.lstep:hover{transform:translateY(-3px);border-color:var(--ink)}
+.lstep .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:2.5px;color:var(--crimson);font-weight:600;margin-bottom:10px}
+.lstep p{font-size:13.5px;color:var(--graphite);line-height:1.55}
+.ltag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;background:var(--ink);color:var(--bone);padding:3px 8px;border-radius:5px;margin-top:8px}
+.flip{margin-top:38px;border:1px solid var(--hairline);border-radius:14px;overflow:hidden;background:var(--paper)}
+.fliphead{display:grid;grid-template-columns:1fr 1fr;font-family:var(--mono);font-size:11.5px;letter-spacing:2.5px;font-weight:600}
+.fliphead .fb{padding:14px 20px;color:var(--graphite);background:var(--bone)}
+.fliphead .fa{padding:14px 20px;color:var(--bone);background:var(--crimson)}
+.fliprow{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--hairline)}
+.fliprow span{padding:16px 20px;font-size:14px;line-height:1.55}
+.fliprow span:first-child{color:var(--graphite)}
+.fliprow span:last-child{border-left:1px solid var(--hairline);color:var(--ink)}
+@media(max-width:700px){.fliphead,.fliprow{grid-template-columns:1fr}.fliprow span:last-child{border-left:0;border-top:1px dashed var(--hairline)}}
+.flipline{font-family:var(--mono);font-size:13.5px;letter-spacing:1px;color:var(--crimson);font-weight:600;margin-top:18px}
 </style>
 </head>
 <body>
+<div id="progress"></div>
 
+<!-- ============ NAV ============ -->
 <nav><div class="wrap">
-  <a class="logo" href="#top"><span class="mark">P</span> Penny</a>
+  <a class="lockup" href="#/" >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="38" height="38" style="border-radius:10px" aria-hidden="true">
+    <rect width="320" height="320" rx="64" fill="#9E2B25"/>
+  <path d="M 62 320 A 98 98 0 0 1 258 320 Z" fill="#16130F"/>
+  <rect x="144" y="212" width="32" height="46" rx="12" fill="#FAF7F1"/>
+  <path d="M 142 260 L 160 283 L 178 260 Z" fill="#FAF7F1"/>
+  <path d="M 58 174 A 102 102 0 0 1 262 174 L 262 220 L 58 220 Z" fill="#16130F"/>
+  <circle cx="160" cy="172" r="66" fill="#FAF7F1"/>
+  <clipPath id="lensB"><rect x="109" y="153" width="46" height="40" rx="10"/><rect x="165" y="153" width="46" height="40" rx="10"/></clipPath>
+  <path d="M 116 140 Q 132 133 148 140" fill="none" stroke="#16130F" stroke-width="5.5" stroke-linecap="round"/>
+  <path d="M 172 140 Q 188 133 204 140" fill="none" stroke="#16130F" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="102" cy="200" r="7" fill="#C2503F" opacity="0.45"/>
+  <circle cx="218" cy="200" r="7" fill="#C2503F" opacity="0.45"/>
+  <rect x="109" y="153" width="46" height="40" rx="10" fill="none" stroke="#16130F" stroke-width="6"/>
+  <rect x="165" y="153" width="46" height="40" rx="10" fill="none" stroke="#16130F" stroke-width="6"/>
+  <path d="M 155 165 Q 160 161 165 165" fill="none" stroke="#16130F" stroke-width="6" stroke-linecap="round"/>
+  <g class="p-pupils">
+    <g class="p-eye"><circle cx="132" cy="174" r="8" fill="#16130F"/><circle cx="135" cy="171" r="2.8" fill="#FFFFFF"/></g>
+    <g class="p-eye"><circle cx="188" cy="174" r="8" fill="#16130F"/><circle cx="191" cy="171" r="2.8" fill="#FFFFFF"/></g>
+  </g>
+    <path d="M 151 212 Q 160 219 169 211" fill="none" stroke="#16130F" stroke-width="5" stroke-linecap="round"/>
+</svg>
+    PENNY
+  </a>
   <div class="links">
-    <a href="#problem">The problem</a>
-    <a href="#watch">What it watches</a>
-    <a href="#how">How it works</a>
-    <a href="#stories">Customers</a>
-    <a href="eval.html">Results</a>
-    <a href="docs.html">Docs</a>
+    <a href="#/" data-nav="home">Home</a>
+    <a href="#/resources" data-nav="resources">Resources</a>
+    <a href="#/customers" data-nav="customers">Customers</a>
+    <a href="#/team" data-nav="team">Team</a>
   </div>
-  <a class="btn" href="#book">Book a demo</a>
+  <a class="btn" href="#/talk-to-us">Talk to Us</a>
 </div></nav>
 
-<div id="top"></div>
+<!-- ============ PAGE: HOME ============ -->
+<main class="page" data-page="home">
 
-<!-- HERO -->
+<!-- Fold 1: Hero -->
 <header class="hero"><div class="wrap">
-  <span class="eyebrow rv"><span class="pulse"></span> Money assurance for multi-location retail & restaurants</span>
-  <h1 class="rv">Every store leaks<br>a little money.<br><span class="grad">Penny finds it.</span></h1>
-  <p class="sub rv">A short drawer here. An overbilled invoice there. A cashier voiding sales on the late shift. Across dozens of locations it adds up to real money — and no human can watch it all. Penny does, every night, and only bothers you when it's real.</p>
-  <div class="cta rv">
-    <a class="btn" href="#book">Book a demo →</a>
-    <a class="btn ghost" href="../mock/penny-console.html">See a night's findings</a>
-  </div>
-  <div class="hero-note rv">Works with the POS and accounting systems you already run · Live in a week · Read-only, so nothing breaks</div>
-
-  <div class="demo rv">
-    <div class="bar">
-      <span class="dot" style="background:#ff6b5e"></span><span class="dot" style="background:#ffb454"></span><span class="dot" style="background:#3ddc97"></span>
-      <span class="title">penny · last night across 48 stores</span>
-    </div>
-    <div class="body">
-      <div class="lane left">
-        <h4>◆ Worth your attention (3)</h4>
-        <div class="row leak"><span class="amt">$610</span><span class="txt">Register running short — Store #14, Riverside<small>light 11 of the last 14 nights, always the closing shift</small></span></div>
-        <div class="row leak"><span class="amt">$1,240</span><span class="txt">Overbilled by Verde Produce<small>invoiced 40 cases, the dock only signed for 34</small></span></div>
-        <div class="row leak"><span class="amt">Flag</span><span class="txt">Cashier voiding 1 in 3 sales — Store #22<small>only on Tue/Thu nights; the other 7 cashiers are normal</small></span></div>
+  <div class="grid">
+    <div>
+      <span class="eyebrow rv">Closing the Judgment Loop</span>
+      <h1 class="rv" style="margin-top:16px;font-size:clamp(36px,5.6vw,66px)">Every store.<br>Every signal.<br><span class="accent">Every penny.</span></h1>
+      <p class="sub rv">Leakage hides across procurement, cash handling, and margin — too scattered to staff, too noisy to alert on. Penny runs autonomously across every store on the right cadence for each signal, investigates every anomaly before raising it, and delivers only verified findings to the right human — evidence trail already built.</p>
+      <div class="ctas rv">
+        <a class="btn" href="#/talk-to-us">Talk to Us</a>
+        <a class="btn ghost" href="#duties" onclick="document.getElementById('duties').scrollIntoView();return false">See how it checks</a>
       </div>
-      <div class="lane right">
-        <h4>✓ Checked & fine — ignore (362)</h4>
-        <div class="row ok"><span class="amt">55×</span><span class="txt">"Duplicate" bakery payments<small>it's the standing weekly order — not a double charge</small></span></div>
-        <div class="row ok"><span class="amt">$3–$5</span><span class="txt">Drawer differences at 269 stores<small>ordinary rounding, no pattern</small></span></div>
-        <div class="row ok"><span class="amt">1 store</span><span class="txt">Void spike at Store #31<small>the POS was down that afternoon — not a person</small></span></div>
+    </div>
+
+    <div class="rv">
+      <div class="receipt-scene">
+        <div class="receipt" id="receipt" onclick="reprint()" title="Click to run the night again">
+          <div class="rhead">
+            <div class="rname">PENNY · SWEEP REPORT</div>
+            <div class="rsub">2,000 stores · store-to-bank + purchase-to-payment</div>
+          </div>
+          <div class="ritem flag"><span class="rl"><b>Settlement gap — Store #0214</b><small>Case #2210 · deposit short vs. register close</small></span><span class="rv2">$340 FLAG</span></div>
+          <div class="ritem flag"><span class="rl"><b>Invoice over count — Verde Produce</b><small>40 cases billed · 34 signed at the dock</small></span><span class="rv2">$1,240 FLAG</span></div>
+          <div class="ritem clear"><span class="rl"><b>55 "duplicate" bakery payments</b><small>standing weekly order · known cause</small></span><span class="rv2">CLEARED</span></div>
+          <div class="ritem flag"><span class="rl"><b>Cash pattern — Store #0871</b><small>$8–15 short on 5 of 7 closing shifts</small></span><span class="rv2">$64 FLAG</span></div>
+          <div class="ritem clear"><span class="rl"><b>Void spike — Store #0031</b><small>POS outage 2:10–3:40pm · not a person</small></span><span class="rv2">CLEARED</span></div>
+          <div class="rtotal"><span>VERIFIED LEAKAGE FOUND</span><span style="color:var(--crimson)">$8,502</span></div>
+          <div class="rfoot">EVERY CHECK LOGGED · INCLUDING THE CLEAN ONES</div>
+        </div>
+        <div class="avatar-holder">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="100%" role="img" aria-label="Penny">
+    <rect width="320" height="320" rx="64" fill="#9E2B25"/>
+  <path d="M 62 320 A 98 98 0 0 1 258 320 Z" fill="#16130F"/>
+  <rect x="144" y="212" width="32" height="46" rx="12" fill="#FAF7F1"/>
+  <path d="M 142 260 L 160 283 L 178 260 Z" fill="#FAF7F1"/>
+  <path d="M 58 174 A 102 102 0 0 1 262 174 L 262 220 L 58 220 Z" fill="#16130F"/>
+  <circle cx="160" cy="172" r="66" fill="#FAF7F1"/>
+  <clipPath id="lenses"><rect x="109" y="153" width="46" height="40" rx="10"/><rect x="165" y="153" width="46" height="40" rx="10"/></clipPath>
+  <path d="M 116 140 Q 132 133 148 140" fill="none" stroke="#16130F" stroke-width="5.5" stroke-linecap="round"/>
+  <path d="M 172 140 Q 188 133 204 140" fill="none" stroke="#16130F" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="102" cy="200" r="7" fill="#C2503F" opacity="0.45"/>
+  <circle cx="218" cy="200" r="7" fill="#C2503F" opacity="0.45"/>
+  <rect x="109" y="153" width="46" height="40" rx="10" fill="none" stroke="#16130F" stroke-width="6"/>
+  <rect x="165" y="153" width="46" height="40" rx="10" fill="none" stroke="#16130F" stroke-width="6"/>
+  <path d="M 155 165 Q 160 161 165 165" fill="none" stroke="#16130F" stroke-width="6" stroke-linecap="round"/>
+  <g class="p-pupils">
+    <g class="p-eye"><circle cx="132" cy="174" r="8" fill="#16130F"/><circle cx="135" cy="171" r="2.8" fill="#FFFFFF"/></g>
+    <g class="p-eye"><circle cx="188" cy="174" r="8" fill="#16130F"/><circle cx="191" cy="171" r="2.8" fill="#FFFFFF"/></g>
+  </g>
+  <g clip-path="url(#lenses)"><rect class="p-glint" x="124" y="136" width="15" height="76" fill="#FFFFFF" opacity="0"/></g>
+  <path d="M 151 212 Q 160 219 169 211" fill="none" stroke="#16130F" stroke-width="5" stroke-linecap="round"/>
+</svg>
+        </div>
       </div>
     </div>
   </div>
 </div></header>
 
-<!-- LOGOS -->
-<div class="wrap logos rv">
-  <div class="cap">Trusted by operators running 2,000+ locations</div>
-  <div class="row2">
-    <div class="brand"><span>🍔</span>Coastal Burgers</div>
-    <div class="brand"><span>🛒</span>Fillmore Grocery</div>
-    <div class="brand"><span>☕</span>Nomad Coffee</div>
-    <div class="brand"><span>🏪</span>Sunbelt Convenience</div>
-    <div class="brand"><span>🍕</span>Harbor Pizza Co.</div>
-  </div>
-</div>
+<!-- stat band -->
+<div class="wrap"><div class="stats">
+  <div class="stat rv"><div class="n">Every store</div><div class="l">every sweep — zero-sample coverage where sampling was the only option</div></div>
+  <div class="stat rv"><div class="n" data-count="2000" data-suffix=" hrs">0</div><div class="l">person-hours per day to reconcile settlement manually at 2,000-store scale</div></div>
+  <div class="stat rv"><div class="n" data-count="6">0</div><div class="l">places money actually leaks — all watched under one evidence trail, not four vendors</div></div>
+  <div class="stat rv"><div class="n" data-count="20" data-suffix="%+">0</div><div class="l">false-positive rates for tools without a known-cause gate. Penny gates every flag</div></div>
+</div></div>
 
-<!-- STATS -->
-<div class="wrap">
-  <div class="stats">
-    <div class="stat rv"><div class="n r" data-count="3" data-suffix="%">0%</div><div class="l">of revenue lost to shrink, waste &amp; billing errors</div></div>
-    <div class="stat rv"><div class="n g" data-count="18400" data-prefix="$">$0</div><div class="l">recovered per store, per year (avg)</div></div>
-    <div class="stat rv"><div class="n v" data-count="6" data-suffix=" hrs">0</div><div class="l">of nightly reconciling, gone</div></div>
-    <div class="stat rv"><div class="n w" data-count="30" data-suffix=" days">0</div><div class="l">to pay for itself, typically</div></div>
-  </div>
-</div>
+<div class="ticker-wrap" aria-hidden="true"><div class="ticker"><span><i><b class="tk-f">FLAG</b> · $340 SETTLEMENT GAP — STORE #0214</i><i><b class="tk-c">CLEARED</b> · 55 "DUPLICATES" = STANDING BAKERY ORDER</i><i><b class="tk-f">FLAG</b> · $1,240 OVERBILL — VERDE PRODUCE</i><i><b class="tk-c">CLEARED</b> · VOID SPIKE = POS OUTAGE, NOT A PERSON</i><i><b class="tk-a">ABSTAIN</b> · BANK FEED MISSING — NAMED, NOT GUESSED</i><i><b class="tk-f">FLAG</b> · $8–15 SHORT × 5 OF 7 SHIFTS — STORE #0871</i><i><b class="tk-c">CLEARED</b> · $3–5 DRAWER ROUNDING × 269 STORES</i></span><span><i><b class="tk-f">FLAG</b> · $340 SETTLEMENT GAP — STORE #0214</i><i><b class="tk-c">CLEARED</b> · 55 "DUPLICATES" = STANDING BAKERY ORDER</i><i><b class="tk-f">FLAG</b> · $1,240 OVERBILL — VERDE PRODUCE</i><i><b class="tk-c">CLEARED</b> · VOID SPIKE = POS OUTAGE, NOT A PERSON</i><i><b class="tk-a">ABSTAIN</b> · BANK FEED MISSING — NAMED, NOT GUESSED</i><i><b class="tk-f">FLAG</b> · $8–15 SHORT × 5 OF 7 SHIFTS — STORE #0871</i><i><b class="tk-c">CLEARED</b> · $3–5 DRAWER ROUNDING × 269 STORES</i></span></div></div>
 
-<!-- PROBLEM -->
-<section id="problem"><div class="wrap center" style="max-width:840px">
-  <span class="tag rv">Why this is costing you</span>
-  <h2 class="rv">One store loses a little. Fifty stores lose a fortune.</h2>
-  <p class="lead center rv">The losses are small enough to shrug off store by store — which is exactly why they never get caught. Multiplied across your whole estate, they're one of the biggest line items nobody's watching.</p>
-  <div class="grid3">
-    <div class="card rv"><div class="big">$610</div><h3>The drawer that's always light</h3><p>A closing shift comes up $40–$60 short a few nights a week. Each night looks like a mistake. Over a quarter it's a habit — and thousands of dollars.</p></div>
-    <div class="card rv"><div class="big">$1,240</div><h3>The invoice nobody checks</h3><p>A supplier bills for 40 cases; 34 came off the truck. Your team pays it — they pay hundreds like it every week, and the three-way match never happens.</p></div>
-    <div class="card rv"><div class="big">1 in 3</div><h3>The voids on the night shift</h3><p>A cashier rings a sale, voids it, pockets the cash. It hides in a normal-looking void rate — unless someone compares them, store by store, shift by shift.</p></div>
+<!-- Folds 2-4: the story, one interactive band -->
+<section class="dark" id="story" style="padding:64px 0"><div class="wrap">
+  <div class="ch-tabs" id="chtabs">
+    <button class="ch-tab on"><span class="ch-k">01 · THE PAIN</span><span class="ch-bar"><i></i></span></button>
+    <button class="ch-tab"><span class="ch-k">02 · THE BOUNDARY</span><span class="ch-bar"><i></i></span></button>
+    <button class="ch-tab"><span class="ch-k">03 · THE JUDGMENT LOOP</span><span class="ch-bar"><i></i></span></button>
   </div>
-  <p class="lead center rv" style="margin-top:36px;color:var(--ink)">The old fixes make it worse: a rules alert screams at <em>every</em> $3 difference and every standing order, so your team drowns in false alarms and stops looking. <b>The real leaks hide in that noise.</b></p>
-</div></section>
-
-<!-- WATCH -->
-<section id="watch" style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
-  <div class="center" style="max-width:720px"><span class="tag rv">What Penny watches</span>
-  <h2 class="rv">A tireless controller for every location.</h2>
-  <p class="lead center rv">Penny reads the same records your best finance person would — for all your stores, every single night.</p></div>
-  <div class="watch">
-    <div class="wc rv"><div class="ic">💵</div><h4>Cash &amp; drawers</h4><p>Spots the register that's quietly, consistently short — and ignores the honest rounding.</p></div>
-    <div class="wc rv"><div class="ic">🧾</div><h4>Supplier invoices</h4><p>Matches what you ordered, got, and were billed. Flags overbilling and true double-payments.</p></div>
-    <div class="wc rv"><div class="ic">🛡️</div><h4>Register &amp; staff</h4><p>Finds the void, refund, and no-sale patterns that mean theft — without accusing your good people.</p></div>
-    <div class="wc rv"><div class="ic">🏦</div><h4>Card settlements</h4><p>Ties your card sales to what actually hit the bank, net of fees. Surfaces the gaps that don't add up.</p></div>
-  </div>
-</div></section>
-
-<!-- HOW -->
-<section id="how"><div class="wrap">
-  <div class="center" style="max-width:720px"><span class="tag rv">How it works</span>
-  <h2 class="rv">You do nothing. Penny does the night shift.</h2></div>
-  <div class="steps3">
-    <div class="s3 rv"><div class="num">1</div><h3>Connect once</h3><p>Penny plugs into your POS and accounting systems, read-only. No new hardware, no ripping anything out. Live in about a week.</p></div>
-    <div class="s3 rv"><div class="num">2</div><h3>It watches every night</h3><p>While you're closed, Penny reviews every store, tells the real problems apart from the noise, and drafts the fix — a dispute, a hold, a case.</p></div>
-    <div class="s3 rv"><div class="num">3</div><h3>You get a morning brief</h3><p>Coffee-length. Three things that matter, each with the proof and a recommended action. Approve the ones that need you; the rest are handled.</p></div>
+  <div class="ch-stage">
+    <div class="ch on">
+      <h2>One store loses a little.<br><em>Eighteen hundred lose a fortune.</em></h2>
+      <p>Same leaks in every estate — too small to chase store by store, too scattered to sample.</p>
+      <div class="ch-chips">
+        <span class="chip"><b class="tk-f">DRAWER</b> · $8–15 SHORT, 5 OF 7 SHIFTS</span>
+        <span class="chip"><b class="tk-f">INVOICE</b> · 40 BILLED, 34 SIGNED</span>
+        <span class="chip"><b class="tk-f">MARGIN</b> · 2¢/PLATE OFF RECIPE</span>
+        <span class="chip"><b class="tk-f">DEPOSIT</b> · $340 NEVER LANDED</span>
+      </div>
+    </div>
+    <div class="ch">
+      <h2>Penny never touches<br><em>your money.</em></h2>
+      <p>Detection-only is the product decision, not a roadmap gap. Penny investigates, routes each verified flag to the human who owns that duty — LP findings never land on a store manager’s desk — and that human decides. She never guesses: if she can’t tell, she says so.</p>
+      <div class="ch-chips">
+        <span class="chip">READ-ONLY, ALWAYS</span>
+        <span class="chip">VERDICT, NOT ACTION</span>
+        <span class="chip">FLAG · CLEAR · ABSTAIN</span>
+        <span class="chip">A HUMAN DECIDES</span>
+      </div>
+    </div>
+    <div class="ch">
+      <h2>Everyone closed the data loop.<br><em>Penny closes the judgment loop.</em></h2>
+      <p>For every store, on the right cadence for each signal: what a great controller does — at a scale no controller can.</p>
+      <div class="ch-chips">
+        <span class="chip">INVESTIGATE</span>
+        <span class="chip">RULE OUT KNOWN CAUSES</span>
+        <span class="chip">DECIDE — WITH EVIDENCE</span>
+        <span class="chip">ROUTE TO THE RIGHT HUMAN</span>
+      </div>
+      <div class="flow"></div>
+    </div>
   </div>
 </div></section>
 
-<!-- DIFFERENCE -->
-<section style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
-  <div class="center" style="max-width:720px"><span class="tag rv">Why teams actually keep using it</span>
-  <h2 class="rv">It never cries wolf.</h2></div>
-  <div class="split">
-    <div class="feat rv">
-      <h3>Only tells you what's real</h3>
-      <p>Last night Penny looked at 365 odd-looking things across 48 stores. It flagged 3 and quietly cleared 362 — the standing orders, the pennies, the store where the POS just went down. Because it's trusted, nobody ignores the alerts that matter.</p>
-      <ul>
-        <li><b>Signal, not noise</b> — 3 real issues, 362 explained-away</li>
-        <li><b>Never accuses your good people</b> — it cleared a trainee the old system kept flagging</li>
-        <li><b>Shows its work</b> — every flag comes with the receipts</li>
-        <li><b>Speaks plain</b> — "Store #14's closing shift is $40 light most nights," not a chart</li>
+<!-- Fold 5: Six duties -->
+<section id="duties" style="background:var(--paper);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)"><div class="wrap">
+  <span class="eyebrow rv">Coverage, not a feature count</span>
+  <h2 class="rv" style="margin-top:14px">The six places money actually leaks</h2>
+  <div class="seal rv"></div>
+  <p class="lead rv">Procurement, cash handling, margin — mapped end to end. Each signal checked on its own cadence, every finding under one evidence trail.</p>
+  <div class="tabs rv" id="tabs"></div>
+  <div id="panels"></div>
+</div></section>
+
+<!-- Fold 5.5: how she works — the context layer -->
+<section class="tight" id="how"><div class="wrap">
+  <span class="eyebrow rv">The context layer is the engine</span>
+  <h2 class="rv" style="margin-top:14px">She doesn't run queries.<br>She runs queries with context.</h2>
+  <div class="seal rv"></div>
+  <p class="lead rv">Every check Penny runs is loaded with what a great controller already knows: your actual policy thresholds (from your database, not hardcoded), what normal looks like for that store and that season, a library of known-innocent edge cases to rule out first, and exactly which human each finding should reach. That context travels with every verdict.</p>
+
+  <div class="loop rv">
+    <div class="lstep"><div class="lk">01 · PERCEIVE</div><p>Live transaction data across all six duties. SQL, read-only always.</p></div>
+    <div class="lstep"><div class="lk">02 · PLAN</div><p>A statistical net surfaces every candidate — nothing slips past. <span class="ltag">HIGH RECALL</span></p></div>
+    <div class="lstep"><div class="lk">03 · ACT</div><p>Adjudication with full business context: policies, playbooks, innocent edge cases — then flag, clear, or abstain. <span class="ltag">HIGH PRECISION</span></p></div>
+    <div class="lstep"><div class="lk">04 · LEARN</div><p>Every verdict recorded with its evidence. Reviewer confirms or clears; the context layer gets sharper.</p></div>
+  </div>
+
+  <div class="flip rv">
+    <div class="fliphead"><span class="fb">WITHOUT CONTEXT</span><span class="fa">WITH PENNY</span></div>
+    <div class="fliprow"><span>A skimming pattern runs 18 months across 6 stores before anyone connects register to bank.</span><span>Night one of the pattern → flagged, with the register close and deposit side by side.</span></div>
+    <div class="fliprow"><span>An ERP's exact-match check pays every near-duplicate — the vendor changed one digit.</span><span>Fuzzy match with context for what a near-duplicate looks like. Cleared or flagged, never missed.</span></div>
+    <div class="fliprow"><span>"Anomaly detected." No context. Goes to whoever checks the queue.</span><span>One verdict, routed to the named reviewer for that duty, with what was checked, what was cleared, and why.</span></div>
+  </div>
+  <p class="flipline rv">18 months of undetected fraud → a night-one flag. That's what context does.</p>
+</div></section>
+
+<!-- Fold 6: Customer proof -->
+<section><div class="wrap">
+  <span class="eyebrow rv">The receipts</span>
+  <h2 class="rv" style="margin-top:14px">Findings that held up</h2>
+  <div class="seal rv"></div>
+  <div class="slabs">
+    <div class="slab rv"><div class="sv">QSR · 1,800 STORES</div><h3>Crunch Kingdom</h3><p class="prob">Settlement reconciliation was sampled — 40 stores a quarter, out of 1,800.</p><div class="outcome">$47,000/mo</div><p class="prob">verified leakage found, every store covered nightly.</p><blockquote>"The first Case file we opened had the register close, the deposit slip, and the fee schedule side by side. Nobody argued. There was nothing to argue with."<cite style="font-style:normal;font-family:var(--mono);font-size:11px;color:var(--graphite);display:block;margin-top:8px">VP FINANCE · ILLUSTRATIVE CASE STUDY</cite></blockquote></div>
+    <div class="slab rv"><div class="sv">COFFEE / HORECA · 340 STORES</div><h3>Shatarbakh Coffee Co.</h3><p class="prob">COGS drifting off recipe standard, invisible in monthly variance reviews.</p><div class="outcome">2.1% margin</div><p class="prob">recovered on two SKUs after per-item recipe-vs-actual checks.</p><blockquote>"No vendor even quoted us on this problem. Penny treats it as duty number five."<cite style="font-style:normal;font-family:var(--mono);font-size:11px;color:var(--graphite);display:block;margin-top:8px">CONTROLLER · ILLUSTRATIVE CASE STUDY</cite></blockquote></div>
+    <div class="slab rv"><div class="sv">CONVENIENCE · 300+ STORES</div><h3>Sunbelt Convenience</h3><p class="prob">LP tool flagged so many cashiers that managers had stopped reading alerts.</p><div class="outcome">12 cleared</div><p class="prob">honest cashiers cleared by the known-cause gate; 1 real pattern flagged, with evidence.</p><blockquote>"It cleared people the old system had under a cloud. That's what bought it credibility here."<cite style="font-style:normal;font-family:var(--mono);font-size:11px;color:var(--graphite);display:block;margin-top:8px">DIRECTOR OF LP · ILLUSTRATIVE CASE STUDY</cite></blockquote></div>
+    <div class="slab rv"><div class="sv">PIZZA / FRANCHISE · 62 STORES</div><h3>Harbor Pizza Co.</h3><p class="prob">Duplicate-payment audits ran quarterly at best, exact-match only.</p><div class="outcome">$8,502</div><p class="prob">found in a single monthly sweep — near-duplicates the exact-match tool had passed for years.</p><blockquote>"Fifty-five 'duplicates' turned out to be our standing bakery order. It flagged the two that weren't."<cite style="font-style:normal;font-family:var(--mono);font-size:11px;color:var(--graphite);display:block;margin-top:8px">AP LEAD · ILLUSTRATIVE CASE STUDY</cite></blockquote></div>
+  </div>
+  <p class="fict rv">Customer names and figures are illustrative case studies, presented as such.</p>
+</div></section>
+
+<!-- Fold 7: What's next -->
+<section class="tight" style="background:var(--paper);border-top:1px solid var(--hairline)"><div class="wrap">
+  <span class="eyebrow rv">Not ready to talk? Fine. Read.</span>
+  <h2 class="rv" style="margin-top:14px">What's next</h2>
+  <div class="seal rv"></div>
+  <div class="next">
+    <div class="ncard rv">
+      <div class="ntag">WEBINAR</div>
+      <h3>Savings Activate</h3>
+      <p>One hour on where leakage actually hides at multi-unit scale — with a coffee-chain finance lead as guest, and real (anonymized) case files on screen. No pitch until the last five minutes, and we'll say so when it starts.</p>
+      <form class="capture" style="margin-top:18px" onsubmit="captured(event)">
+        <input type="email" placeholder="Work email" required aria-label="Work email for webinar">
+        <button type="submit">SAVE MY SEAT</button>
+      </form>
+    </div>
+    <div class="ncard rv">
+      <div class="ntag">WHITEPAPERS</div>
+      <h3>The thinking, in writing</h3>
+      <div class="wplist">
+        <div class="wprow"><span class="wt">The Known-Cause Gate: why 20%+ false-positive rates are a design choice</span><a href="#/resources">READ →</a></div>
+        <div class="wprow"><span class="wt">COGS Leakage: the duty no vendor covers</span><a href="#/resources">READ →</a></div>
+        <div class="wprow"><span class="wt">Zero-Sample Coverage: retiring the audit sample at 2,000-store scale</span><a href="#/resources">READ →</a></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+</main>
+
+<!-- ============ PAGE: RESOURCES ============ -->
+<main class="page" data-page="resources">
+<section><div class="wrap">
+  <span class="eyebrow">Resources</span>
+  <h2 style="margin-top:14px">The library</h2>
+  <div class="seal"></div>
+  <p class="lead">Short pieces, one per duty, every one on the same five-part template: what's different, where the old way breaks, what it saves, what it frees your team for, and exactly how Penny does it. The format doesn't vary. That's on purpose.</p>
+  <div class="rgrid" id="rgrid"></div>
+</div></section>
+</main>
+
+<!-- ============ PAGE: CUSTOMERS ============ -->
+<main class="page" data-page="customers">
+<section><div class="wrap">
+  <span class="eyebrow">Customers</span>
+  <h2 style="margin-top:14px">Scan the proof</h2>
+  <div class="seal"></div>
+  <p class="lead">One slab per customer: the problem, the number, the quote. No narrative filler — this page is built for scanning.</p>
+  <div class="slabs" id="cslabs"></div>
+  <p class="fict">Customer names and figures are illustrative case studies, presented as such.</p>
+</div></section>
+</main>
+
+<!-- ============ PAGE: TEAM ============ -->
+<main class="page" data-page="team">
+<section><div class="wrap">
+  <span class="eyebrow">A three-person army</span>
+  <h2 style="margin-top:14px">Meet Builder Tribe</h2>
+  <div class="seal"></div>
+
+  <div class="origin">
+    <p><b>It started with a shrug.</b> One of us watched a store manager wave off a drawer that came up twelve dollars short — again — because chasing it would cost more than the twelve dollars. That shrug wouldn't leave us alone. We dug in, and the deeper we went, the worse it got: the same quiet leaks in procurement, cash handling, and margin at every multi-unit operator we met. Conversations with operators from chains like Chick-fil-A and Jollibee turned a hunch into conviction — this is a real, expensive, unsolved problem, and everyone had simply learned to live with it. So the three of us stopped talking about it and built Penny.</p>
+    <p class="penny-name">And yes — she's named after the neighbor from <i>The Big Bang Theory</i>. Except our Penny is her financial opposite: she watches every cent, rules out the innocent explanations first, and never guesses.</p>
+  </div>
+
+  <div class="team-grid">
+    <div class="tmate">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="100%" role="img" aria-label="Andrew Paterson — Builder Tribe">
+  <style>.p-eye{transform-box:fill-box;transform-origin:center;animation:tblink 5s infinite}@keyframes tblink{0%,91%,100%{transform:scaleY(1)}94%,96%{transform:scaleY(.08)}98%{transform:scaleY(1)}}@media (prefers-reduced-motion:reduce){.p-eye{animation:none}}
+/* ---------- v4: team page ---------- */
+.origin{max-width:760px;margin-top:8px}
+.origin p{font-size:17px;line-height:1.7;color:#2A251E;margin-bottom:16px}
+.origin .penny-name{color:var(--graphite);font-size:15.5px;border-left:4px solid var(--crimson);padding-left:16px}
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+@media(max-width:860px){.team-grid{grid-template-columns:1fr}}
+.tmate{background:var(--paper);border:1px solid var(--hairline);border-radius:16px;padding:24px;transition:transform .2s,border-color .2s}
+.tmate:hover{transform:translateY(-3px);border-color:var(--ink)}
+.tmate svg{border-radius:14px;display:block}
+.tmate h3{font-size:19px;font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:1px;margin:16px 0 4px}
+.trole{font-family:var(--mono);font-size:11px;letter-spacing:2.5px;color:var(--crimson);margin-bottom:12px}
+.tmate p{font-size:14.5px;color:var(--graphite);line-height:1.6}
+.culture{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+@media(max-width:860px){.culture{grid-template-columns:1fr}}
+.cul{background:var(--ink);color:var(--bone);border-radius:14px;padding:24px}
+.cul h4{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--ember);margin-bottom:10px}
+.cul p{font-size:14.5px;color:#CFC8BB;line-height:1.6}
+
+/* ---------- v5: context layer / how it works ---------- */
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px}
+@media(max-width:860px){.loop{grid-template-columns:1fr 1fr}}
+.lstep{background:var(--paper);border:1px solid var(--hairline);border-radius:12px;padding:20px 18px;position:relative;transition:transform .2s,border-color .2s}
+.lstep:hover{transform:translateY(-3px);border-color:var(--ink)}
+.lstep .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:2.5px;color:var(--crimson);font-weight:600;margin-bottom:10px}
+.lstep p{font-size:13.5px;color:var(--graphite);line-height:1.55}
+.ltag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;background:var(--ink);color:var(--bone);padding:3px 8px;border-radius:5px;margin-top:8px}
+.flip{margin-top:38px;border:1px solid var(--hairline);border-radius:14px;overflow:hidden;background:var(--paper)}
+.fliphead{display:grid;grid-template-columns:1fr 1fr;font-family:var(--mono);font-size:11.5px;letter-spacing:2.5px;font-weight:600}
+.fliphead .fb{padding:14px 20px;color:var(--graphite);background:var(--bone)}
+.fliphead .fa{padding:14px 20px;color:var(--bone);background:var(--crimson)}
+.fliprow{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--hairline)}
+.fliprow span{padding:16px 20px;font-size:14px;line-height:1.55}
+.fliprow span:first-child{color:var(--graphite)}
+.fliprow span:last-child{border-left:1px solid var(--hairline);color:var(--ink)}
+@media(max-width:700px){.fliphead,.fliprow{grid-template-columns:1fr}.fliprow span:last-child{border-left:0;border-top:1px dashed var(--hairline)}}
+.flipline{font-family:var(--mono);font-size:13.5px;letter-spacing:1px;color:var(--crimson);font-weight:600;margin-top:18px}
+</style>
+  <rect width="320" height="320" rx="64" fill="#9E2B25"/>
+  <path d="M 62 320 A 98 98 0 0 1 258 320 Z" fill="#16130F"/>
+  <rect x="144" y="212" width="32" height="40" rx="12" fill="#FAF7F1"/>
+  <g transform="translate(146,268) scale(0.42)">
+    <path d="M 4 34 H 26 A 13 13 0 0 1 26 60 H 4 Z" fill="#FAF7F1"/>
+    <g transform="rotate(-4 16 15)"><path d="M 4 2 H 22 A 12 12 0 0 1 22 26 H 4 Z" fill="#C2503F"/></g>
+  </g>
+  <circle cx="160" cy="168" r="64" fill="#FAF7F1"/>
+  <clipPath id="aface"><circle cx="160" cy="168" r="64"/></clipPath>
+  <!-- short crop: slim top cap -->
+  <g clip-path="url(#aface)"><rect x="90" y="100" width="140" height="34" fill="#16130F"/></g>
+  <!-- beard: low band with a gentle dip, plus mustache -->
+  <g clip-path="url(#aface)"><path d="M 90 206 Q 160 196 230 206 L 230 240 L 90 240 Z" fill="#16130F"/></g>
+  <path d="M 145 201 Q 160 194 175 201 Q 160 208 145 201 Z" fill="#16130F"/>
+  <path d="M 122 148 Q 136 142 150 148" fill="none" stroke="#16130F" stroke-width="5.5" stroke-linecap="round"/>
+  <path d="M 170 148 Q 184 142 198 148" fill="none" stroke="#16130F" stroke-width="5.5" stroke-linecap="round"/>
+  <g class="p-eye"><circle cx="136" cy="170" r="7.5" fill="#16130F"/><circle cx="139" cy="167" r="2.6" fill="#FFFFFF"/></g>
+  <g class="p-eye"><circle cx="184" cy="170" r="7.5" fill="#16130F"/><circle cx="187" cy="167" r="2.6" fill="#FFFFFF"/></g>
+  <path d="M 148 216 Q 160 223 172 215" fill="none" stroke="#FAF7F1" stroke-width="5.5" stroke-linecap="round"/>
+</svg>
+      <h3>Andrew Paterson</h3>
+      <div class="trole">CO-FOUNDER · CEO</div>
+      <p>"I'm the one who hears a throwaway line in a customer meeting and comes back with a product thesis. Years alongside enterprise operators taught me to spot the signal early — and turn it into positioning, partnerships, and plans a whole company can move on. I own Penny's story, and I make sure what we build maps to what finance leaders actually lose sleep over."</p>
+    </div>
+    <div class="tmate">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="100%" role="img" aria-label="Mandeep Cheema — Builder Tribe">
+  <style>.p-eye{transform-box:fill-box;transform-origin:center;animation:tblink 5s infinite}@keyframes tblink{0%,91%,100%{transform:scaleY(1)}94%,96%{transform:scaleY(.08)}98%{transform:scaleY(1)}}@media (prefers-reduced-motion:reduce){.p-eye{animation:none}}
+/* ---------- v4: team page ---------- */
+.origin{max-width:760px;margin-top:8px}
+.origin p{font-size:17px;line-height:1.7;color:#2A251E;margin-bottom:16px}
+.origin .penny-name{color:var(--graphite);font-size:15.5px;border-left:4px solid var(--crimson);padding-left:16px}
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+@media(max-width:860px){.team-grid{grid-template-columns:1fr}}
+.tmate{background:var(--paper);border:1px solid var(--hairline);border-radius:16px;padding:24px;transition:transform .2s,border-color .2s}
+.tmate:hover{transform:translateY(-3px);border-color:var(--ink)}
+.tmate svg{border-radius:14px;display:block}
+.tmate h3{font-size:19px;font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:1px;margin:16px 0 4px}
+.trole{font-family:var(--mono);font-size:11px;letter-spacing:2.5px;color:var(--crimson);margin-bottom:12px}
+.tmate p{font-size:14.5px;color:var(--graphite);line-height:1.6}
+.culture{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+@media(max-width:860px){.culture{grid-template-columns:1fr}}
+.cul{background:var(--ink);color:var(--bone);border-radius:14px;padding:24px}
+.cul h4{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--ember);margin-bottom:10px}
+.cul p{font-size:14.5px;color:#CFC8BB;line-height:1.6}
+
+/* ---------- v5: context layer / how it works ---------- */
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px}
+@media(max-width:860px){.loop{grid-template-columns:1fr 1fr}}
+.lstep{background:var(--paper);border:1px solid var(--hairline);border-radius:12px;padding:20px 18px;position:relative;transition:transform .2s,border-color .2s}
+.lstep:hover{transform:translateY(-3px);border-color:var(--ink)}
+.lstep .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:2.5px;color:var(--crimson);font-weight:600;margin-bottom:10px}
+.lstep p{font-size:13.5px;color:var(--graphite);line-height:1.55}
+.ltag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;background:var(--ink);color:var(--bone);padding:3px 8px;border-radius:5px;margin-top:8px}
+.flip{margin-top:38px;border:1px solid var(--hairline);border-radius:14px;overflow:hidden;background:var(--paper)}
+.fliphead{display:grid;grid-template-columns:1fr 1fr;font-family:var(--mono);font-size:11.5px;letter-spacing:2.5px;font-weight:600}
+.fliphead .fb{padding:14px 20px;color:var(--graphite);background:var(--bone)}
+.fliphead .fa{padding:14px 20px;color:var(--bone);background:var(--crimson)}
+.fliprow{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--hairline)}
+.fliprow span{padding:16px 20px;font-size:14px;line-height:1.55}
+.fliprow span:first-child{color:var(--graphite)}
+.fliprow span:last-child{border-left:1px solid var(--hairline);color:var(--ink)}
+@media(max-width:700px){.fliphead,.fliprow{grid-template-columns:1fr}.fliprow span:last-child{border-left:0;border-top:1px dashed var(--hairline)}}
+.flipline{font-family:var(--mono);font-size:13.5px;letter-spacing:1px;color:var(--crimson);font-weight:600;margin-top:18px}
+</style>
+  <rect width="320" height="320" rx="64" fill="#9E2B25"/>
+  <path d="M 62 320 A 98 98 0 0 1 258 320 Z" fill="#16130F"/>
+  <rect x="144" y="212" width="32" height="40" rx="12" fill="#FAF7F1"/>
+  <!-- Builder Tribe brick mark on the tee -->
+  <g transform="translate(146,268) scale(0.42)">
+    <path d="M 4 34 H 26 A 13 13 0 0 1 26 60 H 4 Z" fill="#FAF7F1"/>
+    <g transform="rotate(-4 16 15)"><path d="M 4 2 H 22 A 12 12 0 0 1 22 26 H 4 Z" fill="#C2503F"/></g>
+  </g>
+  <circle cx="160" cy="168" r="64" fill="#FAF7F1"/>
+  <!-- aviator shades: filled lenses + top bar -->
+  <path d="M 108 156 H 152 A 6 6 0 0 1 158 162 L 154 184 A 14 14 0 0 1 140 196 H 126 A 16 16 0 0 1 110 182 Z" fill="#16130F"/>
+  <path d="M 212 156 H 168 A 6 6 0 0 0 162 162 L 166 184 A 14 14 0 0 0 180 196 H 194 A 16 16 0 0 0 210 182 Z" fill="#16130F"/>
+  <rect x="104" y="152" width="112" height="7" rx="3.5" fill="#16130F"/>
+  <circle cx="128" cy="168" r="4" fill="#FFFFFF" opacity="0.35"/>
+  <circle cx="196" cy="168" r="4" fill="#FFFFFF" opacity="0.35"/>
+  <path d="M 124 140 Q 136 135 148 140" fill="none" stroke="#16130F" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+  <path d="M 172 140 Q 184 135 196 140" fill="none" stroke="#16130F" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+  <path d="M 149 212 Q 160 219 171 211" fill="none" stroke="#16130F" stroke-width="5" stroke-linecap="round"/>
+</svg>
+      <h3>Mandeep Cheema</h3>
+      <div class="trole">CO-FOUNDER · CTO</div>
+      <p>"I'll debate the architecture tradeoff, write the policy guardrail, and merge the fix — same afternoon. 'Read-only, always' is a real security posture because I build it that way: the known-cause gate, the routing, and the evidence trail are my hands on the keyboard."</p>
+    </div>
+    <div class="tmate">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="100%" role="img" aria-label="Ria Biswas — Builder Tribe">
+  <style>.p-eye{transform-box:fill-box;transform-origin:center;animation:tblink 5s infinite}@keyframes tblink{0%,91%,100%{transform:scaleY(1)}94%,96%{transform:scaleY(.08)}98%{transform:scaleY(1)}}@media (prefers-reduced-motion:reduce){.p-eye{animation:none}}
+/* ---------- v4: team page ---------- */
+.origin{max-width:760px;margin-top:8px}
+.origin p{font-size:17px;line-height:1.7;color:#2A251E;margin-bottom:16px}
+.origin .penny-name{color:var(--graphite);font-size:15.5px;border-left:4px solid var(--crimson);padding-left:16px}
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+@media(max-width:860px){.team-grid{grid-template-columns:1fr}}
+.tmate{background:var(--paper);border:1px solid var(--hairline);border-radius:16px;padding:24px;transition:transform .2s,border-color .2s}
+.tmate:hover{transform:translateY(-3px);border-color:var(--ink)}
+.tmate svg{border-radius:14px;display:block}
+.tmate h3{font-size:19px;font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:1px;margin:16px 0 4px}
+.trole{font-family:var(--mono);font-size:11px;letter-spacing:2.5px;color:var(--crimson);margin-bottom:12px}
+.tmate p{font-size:14.5px;color:var(--graphite);line-height:1.6}
+.culture{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+@media(max-width:860px){.culture{grid-template-columns:1fr}}
+.cul{background:var(--ink);color:var(--bone);border-radius:14px;padding:24px}
+.cul h4{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--ember);margin-bottom:10px}
+.cul p{font-size:14.5px;color:#CFC8BB;line-height:1.6}
+
+/* ---------- v5: context layer / how it works ---------- */
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px}
+@media(max-width:860px){.loop{grid-template-columns:1fr 1fr}}
+.lstep{background:var(--paper);border:1px solid var(--hairline);border-radius:12px;padding:20px 18px;position:relative;transition:transform .2s,border-color .2s}
+.lstep:hover{transform:translateY(-3px);border-color:var(--ink)}
+.lstep .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:2.5px;color:var(--crimson);font-weight:600;margin-bottom:10px}
+.lstep p{font-size:13.5px;color:var(--graphite);line-height:1.55}
+.ltag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;background:var(--ink);color:var(--bone);padding:3px 8px;border-radius:5px;margin-top:8px}
+.flip{margin-top:38px;border:1px solid var(--hairline);border-radius:14px;overflow:hidden;background:var(--paper)}
+.fliphead{display:grid;grid-template-columns:1fr 1fr;font-family:var(--mono);font-size:11.5px;letter-spacing:2.5px;font-weight:600}
+.fliphead .fb{padding:14px 20px;color:var(--graphite);background:var(--bone)}
+.fliphead .fa{padding:14px 20px;color:var(--bone);background:var(--crimson)}
+.fliprow{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--hairline)}
+.fliprow span{padding:16px 20px;font-size:14px;line-height:1.55}
+.fliprow span:first-child{color:var(--graphite)}
+.fliprow span:last-child{border-left:1px solid var(--hairline);color:var(--ink)}
+@media(max-width:700px){.fliphead,.fliprow{grid-template-columns:1fr}.fliprow span:last-child{border-left:0;border-top:1px dashed var(--hairline)}}
+.flipline{font-family:var(--mono);font-size:13.5px;letter-spacing:1px;color:var(--crimson);font-weight:600;margin-top:18px}
+</style>
+  <rect width="320" height="320" rx="64" fill="#9E2B25"/>
+  <path d="M 84 150 A 76 76 0 0 1 236 150 L 236 268 A 20 20 0 0 1 216 288 L 208 288 L 208 170 L 112 170 L 112 288 L 104 288 A 20 20 0 0 1 84 268 Z" fill="#16130F"/>
+  <path d="M 62 320 A 98 98 0 0 1 258 320 Z" fill="#16130F"/>
+  <rect x="144" y="212" width="32" height="40" rx="12" fill="#FAF7F1"/>
+  <g transform="translate(146,268) scale(0.42)">
+    <path d="M 4 34 H 26 A 13 13 0 0 1 26 60 H 4 Z" fill="#FAF7F1"/>
+    <g transform="rotate(-4 16 15)"><path d="M 4 2 H 22 A 12 12 0 0 1 22 26 H 4 Z" fill="#C2503F"/></g>
+  </g>
+  <path d="M 92 288 L 92 160 Q 92 120 120 108 L 120 288 Z" fill="#16130F"/>
+  <path d="M 228 288 L 228 160 Q 228 120 200 108 L 200 288 Z" fill="#16130F"/>
+  <circle cx="160" cy="168" r="64" fill="#FAF7F1"/>
+  <path d="M 98 152 A 63 60 0 0 1 222 152 C 218 112 196 98 160 98 C 124 98 102 112 98 152 Z" fill="#16130F"/>
+  <path d="M 122 143 Q 136 137 150 143" fill="none" stroke="#16130F" stroke-width="5.5" stroke-linecap="round"/>
+  <path d="M 170 143 Q 184 137 198 143" fill="none" stroke="#16130F" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="134" cy="174" r="23" fill="none" stroke="#16130F" stroke-width="6"/>
+  <circle cx="186" cy="174" r="23" fill="none" stroke="#16130F" stroke-width="6"/>
+  <path d="M 155 166 Q 160 162 165 166" fill="none" stroke="#16130F" stroke-width="6" stroke-linecap="round"/>
+  <g class="p-eye"><circle cx="136" cy="172" r="7.5" fill="#16130F"/><circle cx="139" cy="169" r="2.6" fill="#FFFFFF"/></g>
+  <g class="p-eye"><circle cx="184" cy="172" r="7.5" fill="#16130F"/><circle cx="187" cy="169" r="2.6" fill="#FFFFFF"/></g>
+  <circle cx="126" cy="205" r="5.5" fill="#C2503F" opacity="0.4"/>
+  <circle cx="194" cy="205" r="5.5" fill="#C2503F" opacity="0.4"/>
+  <path d="M 149 210 Q 160 217 171 209" fill="none" stroke="#16130F" stroke-width="5" stroke-linecap="round"/>
+</svg>
+      <h3>Ria Biswas</h3>
+      <div class="trole">CO-FOUNDER · CRO</div>
+      <p>"I'm the quarterback. I gather the context, write the brief, pull the right people into the room, and I don't stop until the customer and the company both win. My engine of growth is deliberately unglamorous: customer education, sharp follow-through, and stubborn persistence."</p>
+    </div>
+  </div>
+
+  <div class="culture">
+    <div class="cul"><h4>HANDS ON, ALL THREE</h4><p>Everyone talks to customers. Everyone ships. There's nobody to delegate to — and that's a feature, not a gap.</p></div>
+    <div class="cul"><h4>EVIDENCE OVER OPINION</h4><p>Internal debates end the way Penny's findings do: show the receipt.</p></div>
+    <div class="cul"><h4>SMALL ON PURPOSE</h4><p>Three people, zero layers. Decisions take hours, not quarters — and every one of us has met the operators we build for.</p></div>
+  </div>
+</div></section>
+</main>
+
+<!-- ============ PAGE: TALK TO US ============ -->
+<main class="page" data-page="talk-to-us">
+<section><div class="wrap">
+  <div class="demo-grid">
+    <div>
+      <span class="eyebrow">Get a demo</span>
+      <h2 style="margin-top:14px">See Penny run a night<br>on data like yours.</h2>
+      <div class="seal"></div>
+      <p class="lead">A 30-minute walkthrough with the Builder Tribe team — built around your vertical and your store count, not a canned deck.</p>
+      <ul class="expect">
+        <li><b>A live sweep report</b> for a chain your size — flags, clears, and abstains, with the evidence trail open.</li>
+        <li><b>The six duties mapped to your stack</b> — POS, AP, and bank feeds you already run. Read-only, so nothing changes.</li>
+        <li><b>An honest fit read</b> — if sampling is still cheaper at your scale, we'll say so on the call.</li>
       </ul>
+      <div class="demo-quote">
+        <blockquote>"The first Case file had the register close, the deposit slip and the fee schedule side by side. Nobody argued."</blockquote>
+        <cite>VP FINANCE · QSR, 1,800 STORES · ILLUSTRATIVE CASE STUDY</cite>
+      </div>
+      <div class="demo-logos">CRUNCH KINGDOM · SHATARBAKH COFFEE CO. · SUNBELT · HARBOR PIZZA CO.</div>
     </div>
-    <div class="viz rv">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--dim);margin-bottom:12px">and it never moves money on its own —</div>
-      <div class="tierrow"><span class="pill g">automatic</span><div class="t">Open a review note<small>safe &amp; reversible — Penny just does it</small></div></div>
-      <div class="tierrow"><span class="pill w">one click</span><div class="t">Draft a supplier dispute letter<small>ready to send — you press the button</small></div></div>
-      <div class="tierrow"><span class="pill r">your approval</span><div class="t">Hold a payment · open a theft case<small>money or an accusation — always a human first</small></div></div>
-    </div>
-  </div>
-</div></section>
-
-<!-- STORIES -->
-<section id="stories"><div class="wrap">
-  <div class="center" style="max-width:720px"><span class="tag rv">From operators like you</span>
-  <h2 class="rv">Money they didn't know they were losing.</h2></div>
-  <div class="quotes">
-    <div class="quote rv">
-      <div class="stars">★★★★★</div>
-      <p>"Penny found $214,000 in its first quarter — most of it produce invoices we'd been overpaying for years. It paid for itself before the first invoice dispute even cleared."</p>
-      <div class="who"><div class="av">MR</div><div><div class="nm">Marisol Reyes</div><div class="rl">VP Finance · Coastal Burgers (62 locations)</div></div></div>
-    </div>
-    <div class="quote rv">
-      <div class="stars">★★★★★</div>
-      <p>"I used to spend every Sunday reconciling drawers across my nine stores. Now I read Penny's brief with my coffee in ten minutes. It caught a shift lead skimming $80 a night I'd never have found."</p>
-      <div class="who"><div class="av">DP</div><div><div class="nm">Dev Patel</div><div class="rl">Franchise owner · 9 stores</div></div></div>
-    </div>
-    <div class="quote rv">
-      <div class="stars">★★★★★</div>
-      <p>"Our old loss-prevention tool flagged everyone, so our managers ignored it. Penny flags almost no one — and when it does, it's right. It cleared a dozen honest cashiers the old system had under a cloud."</p>
-      <div class="who"><div class="av">AF</div><div><div class="nm">Angela Ford</div><div class="rl">Director of Loss Prevention · Sunbelt (300+ stores)</div></div></div>
+    <div>
+      <div class="formwrap" id="demoform" style="margin:0">
+        <div class="formhead">REQUEST A DEMO</div>
+        <form onsubmit="demoSent(event)" style="text-align:left">
+          <div class="field"><label for="f-name">Full name</label><input id="f-name" type="text" required placeholder="Jane Rivera"></div>
+          <div class="field"><label for="f-email">Work email</label><input id="f-email" type="email" required placeholder="jane@company.com"></div>
+          <div class="field"><label for="f-co">Company</label><input id="f-co" type="text" required placeholder="Company name"></div>
+          <div class="field"><label for="f-stores">Locations you operate</label>
+            <select id="f-stores" required>
+              <option value="" disabled selected>Select a range</option>
+              <option>Under 50</option><option>50–500</option><option>500–2,000</option><option>2,000+</option>
+            </select>
+          </div>
+          <button class="btn" type="submit" style="width:100%;justify-content:center">Request demo</button>
+        </form>
+        <div class="sent" id="sentmsg">
+          <div class="big">Received.</div>
+          <p class="lead" style="margin:12px auto 0;max-width:none">A human replies within one business day with times that work.</p>
+        </div>
+        <p class="formnote">Read-only means read-only: this form is the most access we'll ask for today.</p>
+      </div>
     </div>
   </div>
 </div></section>
+</main>
 
-<!-- TRUST -->
-<section style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div class="wrap">
-  <div class="center" style="max-width:720px"><span class="tag rv">Safe to turn on</span>
-  <h2 class="rv">Built for a finance team's peace of mind.</h2></div>
-  <div class="trust">
-    <div class="tcard rv"><div class="ic">🔒</div><h4>Read-only</h4><p>Penny can look, not touch. It can't change a record or break a system.</p></div>
-    <div class="tcard rv"><div class="ic">🙋</div><h4>Human in control</h4><p>Money movements and accusations always wait for a person to approve.</p></div>
-    <div class="tcard rv"><div class="ic">📜</div><h4>Plays by your rules</h4><p>It follows your policies and thresholds — and tells you which rule it applied.</p></div>
-    <div class="tcard rv"><div class="ic">🧾</div><h4>Audit-ready</h4><p>Every finding and action is logged with its evidence. Defensible, line by line.</p></div>
-  </div>
-</div></section>
-
-<!-- CTA -->
-<section id="book"><div class="wrap">
-  <div class="ctaband rv">
-    <span class="tag">For franchises · restaurant groups · convenience &amp; grocery chains</span>
-    <h2 style="margin-top:12px">See what your stores are leaking.</h2>
-    <p class="lead center" style="margin:16px auto 26px">Give us read-only access for one week. We'll show you the money Penny finds across your locations — no commitment, no risk to your systems.</p>
-    <div class="cta"><a class="btn" href="mailto:hello@penny.ai?subject=Penny%20demo">Book a demo</a><a class="btn ghost" href="../mock/penny-console.html">Explore the product</a></div>
-    <div class="hero-note">Most operators see their first recovered dollars within the trial.</div>
-  </div>
-</div></section>
-
+<!-- ============ FOOTER ============ -->
 <footer><div class="wrap">
-  <a class="logo" href="#top" style="font-size:16px"><span class="mark" style="width:24px;height:24px;font-size:15px">P</span> Penny</a>
-  <span style="color:var(--dim)">The AI that watches every register.</span>
-  <span style="margin-left:auto" class="badge">Built at the Atlan AI Hackathon 2026</span>
-  <a href="docs.html">Docs</a><a href="../mock/penny-console.html">Product</a>
+  <div class="frow">
+    <a class="lockup" href="#/" style="color:var(--bone)">
+      <svg viewBox="0 0 96 130" width="22" aria-hidden="true">
+        <path d="M 46 2 C 46 2 12 46 12 72 A 34 34 0 0 0 80 72 C 80 46 46 2 46 2 Z" fill="#9E2B25"/>
+        <rect x="2" y="58" width="88" height="12" rx="6" fill="#FAF7F1"/>
+      </svg>
+      PENNY
+    </a>
+    <div class="flinks">
+      <a href="#/">Home</a><a href="#/resources">Resources</a><a href="#/customers">Customers</a><a href="#/team">Team</a><a href="#/talk-to-us">Talk to Us</a><a href="mailto:hello@builder-tribe.com">hello@builder-tribe.com</a>
+    </div>
+  </div>
+  <div class="strip">
+    <span>CRUNCH KINGDOM</span><span>SHATARBAKH COFFEE CO.</span><span>SUNBELT CONVENIENCE</span><span>HARBOR PIZZA CO.</span><span>FILLMORE GROCERY</span>
+  </div>
+  <div class="frow" style="margin-top:26px">
+    <div class="bt-lockup">
+      <svg viewBox="0 0 64 64" width="20" aria-hidden="true">
+        <path d="M 4 34 H 26 A 13 13 0 0 1 26 60 H 4 Z" fill="#FAF7F1"/>
+        <g transform="rotate(-4 16 15)"><path d="M 4 2 H 22 A 12 12 0 0 1 22 26 H 4 Z" fill="#9E2B25"/></g>
+      </svg>
+      BUILT BY BUILDER TRIBE
+    </div>
+  </div>
+  <div class="legal">© 2026 Builder Tribe. Penny is a detection-only agent: read-only access, human resolution. Customer examples on this site are illustrative case studies. · Privacy · Terms</div>
 </div></footer>
 
 <script>
-const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
-document.querySelectorAll('.rv').forEach((el,i)=>{el.style.transitionDelay=(Math.min(i%6,5)*40)+'ms';io.observe(el)});
-function countUp(el){
-  const target=+el.dataset.count, pre=el.dataset.prefix||'', suf=el.dataset.suffix||'', dur=1100, t0=performance.now();
-  function tick(t){const p=Math.min((t-t0)/dur,1);const v=Math.round(target*(1-Math.pow(1-p,3)));
-    el.textContent=pre+v.toLocaleString()+suf;if(p<1)requestAnimationFrame(tick)}
-  requestAnimationFrame(tick);
+/* ---------- content data ---------- */
+const duties=[
+ {t:"Three-Way Match",cad:"RUNS NIGHTLY",one:"PO vs. delivery vs. invoice — do all three tell the same story?",
+  today:"AP pays against the invoice; the dock receipt lives in a different system, so the match happens quarterly, on a sample, if at all.",
+  penny:"Penny reads all three documents nightly for every order, and gates before flagging — split shipments, agreed substitutions, and price-break timing are ruled out first.",
+  pn:"40 vs 34",pl:"cases billed vs. signed at the dock — a $1,240 overbill caught on night one",
+  q:"“It pulled the dock signature next to the invoice line. The dispute email wrote itself.”",qw:"AP MANAGER · ILLUSTRATIVE"},
+ {t:"Settlement Recon",cad:"RUNS NIGHTLY",one:"Register sales vs. what actually hit the bank, net of fees.",
+  today:"Fully reconciling settlement at 2,000-store scale takes ~2,000 person-hours a day — so teams sample a handful of stores and hope.",
+  penny:"Penny reconciles every store, every night — zero-sample coverage. Fee schedules, batching delays, and processor holdbacks are known causes, checked before any gap becomes a flag.",
+  pn:"Case #2210",pl:"the missing $340 — deposit short vs. register close, evidence attached",
+  q:"“We went from 40 sampled stores a quarter to all 2,000, nightly. The gaps we found were not where we were sampling.”",qw:"VP FINANCE · ILLUSTRATIVE"},
+ {t:"Loss Prevention",cad:"RUNS WEEKLY",one:"Cashier pattern analysis — voids, refunds, no-sales — not cameras.",
+  today:"Rule-based alerts fire on every void spike, so ~20%+ of flags are noise, managers tune out, and honest people sit under a cloud.",
+  penny:"Penny compares each cashier against the population weekly, then gates: POS outages, training shifts, and manager overrides are ruled out before anyone's name appears. Evidence is designed to be non-accusatory — patterns, not verdicts on people.",
+  pn:"1 in 3",pl:"sales voided, Tue/Thu closing shifts only, one cashier — flagged with the full pattern; 12 others cleared",
+  q:"“It cleared a trainee the old system kept flagging. That's the day the store managers started reading the reports.”",qw:"DIRECTOR OF LP · ILLUSTRATIVE"},
+ {t:"Duplicate Payment",cad:"RUNS MONTHLY",one:"True double-payments — including the near-duplicates exact-match tools miss.",
+  today:"Duplicate audits run quarterly at best, and match on exact vendor + amount + date, so a re-keyed invoice with a transposed digit sails through.",
+  penny:"Penny fuzzy-matches every month — well inside recovery windows — across vendor aliases, amounts, and dates — and the known-cause gate clears standing orders and installment plans before flagging anything.",
+  pn:"55 → 2",pl:"55 apparent duplicates cleared as a standing weekly order; the 2 real ones flagged, worth $8,502",
+  q:"“Every tool we tried flagged our bakery order 55 times. Penny cleared it 55 times and caught the two that mattered.”",qw:"AP LEAD · ILLUSTRATIVE"},
+ {t:"COGS Leakage",cad:"RUNS MONTHLY",one:"Recipe-standard cost vs. actual cost, per item, per location.",
+  today:"Nobody serves this duty — it's confirmed market whitespace. Margin drift shows up as a monthly variance line someone shrugs at.",
+  penny:"Penny prices each menu item against its recipe standard every month, flags sustained drift by SKU and location, and gates for supplier price changes you already approved.",
+  pn:"2¢/plate",pl:"of quiet drift across an estate is a controller-sized salary per year, per SKU",
+  q:"“We asked four vendors to quote this problem. Three said 'roadmap.' One said 'what?'”",qw:"CONTROLLER · ILLUSTRATIVE"},
+ {t:"Cash Over/Short",cad:"RUNS WEEKLY",one:"Persistent small patterns vs. one-off large variances — they mean different things.",
+  today:"Threshold alerts catch the $200 one-off (usually an honest mistake) and miss the $12-a-night habit (usually not).",
+  penny:"Penny models each drawer's normal variance weekly and flags persistence, not size — $8–15 short on 5 of 7 shifts is the pattern that matters, and it's invisible to thresholds.",
+  pn:"5 of 7",pl:"closing shifts short by $8–15 — a pattern no per-night threshold will ever fire on",
+  q:"“The number was small. The pattern wasn't. We'd have never seen it in the daily report.”",qw:"FRANCHISE OWNER · ILLUSTRATIVE"}
+];
+
+const resources=[
+ {d:"SETTLEMENT RECON",t:"Zero-Sample Coverage: retiring the audit sample",
+  a:"Reconcile every store, every night — coverage replaces sampling as the unit of assurance.",
+  b:"Full manual reconciliation costs ~2,000 person-hours/day at 2,000-store scale; sampling was a staffing decision, not a methodology.",
+  c:"~2,000 person-hours/day of equivalent coverage; gaps surface the night they occur, not the quarter after.",
+  d2:"Your reconciliation team stops pulling statements and starts resolving verdicts.",
+  e:"Nightly store-to-bank pass per location; fee schedules, batching and holdbacks checked as known causes before any flag."},
+ {d:"LOSS PREVENTION",t:"The Known-Cause Gate: false positives are a design choice",
+  a:"Name the legitimate explanations and check them first — before a human ever sees a flag.",
+  b:"Gateless rule alerts run ~20%+ false-positive rates; teams tune out, and the real signal dies in the noise.",
+  c:"Flag volume drops to what's real; review time falls with it.",
+  d2:"LP directors investigate patterns worth their time instead of triaging noise.",
+  e:"Population-outlier comparison per cashier, then a named-cause checklist (outages, training, overrides) run and logged before flagging."},
+ {d:"COGS LEAKAGE",t:"COGS Leakage: the duty no vendor covers",
+  a:"Per-item, per-location recipe-vs-actual costing, monthly — a duty with no incumbent.",
+  b:"Point solutions each own a different duty; every vendor studied leaves this one unserved. Monthly variance reviews catch drift months late.",
+  c:"Sustained 2¢/plate drift, caught in weeks instead of quarters.",
+  d2:"Controllers manage margin by SKU decision, not by month-end archaeology.",
+  e:"Monthly recipe-standard pricing against actual purchase costs per SKU and location; approved supplier price changes gated as known causes."},
+ {d:"DUPLICATE PAYMENT",t:"Near-Duplicates: what exact-match audits miss",
+  a:"Fuzzy matching across vendor aliases, amounts and dates — monthly, not quarterly, inside recovery windows.",
+  b:"Exact-match tools pass a re-keyed invoice with one transposed digit; quarterly cadence means a year's exposure before the next look.",
+  c:"$8,502 found in one illustrative sweep — invoices that had passed every prior audit.",
+  d2:"AP audits payments before they age out of recovery windows, not after.",
+  e:"Cross-field fuzzy match plus a standing-order/installment gate, with every clearance logged alongside every flag."},
+ {d:"THREE-WAY MATCH",t:"The Match That Never Happens",
+  a:"PO, dock receipt, and invoice read together, nightly, for every order.",
+  b:"The three documents live in three systems; matching is quarterly and sampled, so overbilling clears AP by default.",
+  c:"A $1,240 overbill (40 billed vs. 34 received) caught on the first night of an illustrative run.",
+  d2:"AP disputes with evidence attached instead of paying on faith.",
+  e:"Document-triple comparison with gates for split shipments, substitutions and price-break timing."},
+ {d:"CASH OVER/SHORT",t:"Persistence Beats Size",
+  a:"Model each drawer's normal variance; flag persistent small patterns thresholds can't see.",
+  b:"Per-night thresholds catch large one-offs (usually honest) and miss small habits (usually not).",
+  c:"An $8–15 / 5-of-7-shifts pattern surfaced in an illustrative run — worth a quarter's payroll leak.",
+  d2:"Ops leaders coach or act on evidence, not on hunches about who closes on Tuesdays.",
+  e:"Weekly per-drawer baseline modeling with persistence scoring; one-off variances auto-cleared as known causes."}
+];
+
+const customers=[
+ {v:"QSR · 1,800 STORES",n:"Crunch Kingdom",p:"Settlement sampled at 40 stores/quarter out of 1,800.",o:"$47,000/mo",ol:"verified leakage found at full nightly coverage.",q:"“The first Case file had the register close, the deposit slip and the fee schedule side by side. Nobody argued.”",w:"VP FINANCE"},
+ {v:"COFFEE / HORECA · 340 STORES",n:"Shatarbakh Coffee Co.",p:"COGS drift invisible in monthly variance reviews.",o:"2.1% margin",ol:"recovered on two SKUs via monthly recipe-vs-actual checks.",q:"“No vendor even quoted us on this problem. Penny treats it as duty number five.”",w:"CONTROLLER"},
+ {v:"CONVENIENCE · 300+ STORES",n:"Sunbelt Convenience",p:"LP alerts so noisy that managers had stopped reading them.",o:"12 cleared",ol:"honest cashiers cleared; 1 real pattern flagged with evidence.",q:"“It cleared people the old system had under a cloud. That bought it credibility here.”",w:"DIRECTOR OF LP"},
+ {v:"PIZZA / FRANCHISE · 62 STORES",n:"Harbor Pizza Co.",p:"Quarterly exact-match duplicate audits.",o:"$8,502",ol:"in near-duplicates found in a single sweep.",q:"“Fifty-five 'duplicates' were our standing bakery order. It flagged the two that weren't.”",w:"AP LEAD"},
+ {v:"GROCERY · 120 STORES",n:"Fillmore Grocery",p:"Three-way match happening on a quarterly sample.",o:"$1,240",ol:"single-invoice overbill caught night one; dozens followed.",q:"“It pulled the dock signature next to the invoice line. The dispute email wrote itself.”",w:"AP MANAGER"},
+ {v:"FRANCHISE HQ · 9 UNITS",n:"Harbor North (franchisee)",p:"Persistent small cash shorts under every threshold.",o:"5 of 7",ol:"shifts pattern surfaced; resolved in a week, on evidence.",q:"“The number was small. The pattern wasn't.”",w:"FRANCHISE OWNER"}
+];
+
+/* ---------- build duties tabs ---------- */
+const tabsEl=document.getElementById('tabs'),panelsEl=document.getElementById('panels');
+duties.forEach((d,i)=>{
+  const b=document.createElement('button');b.className='tab'+(i===0?' on':'');b.textContent=(i+1)+' · '+d.t.toUpperCase();
+  b.onclick=()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));b.classList.add('on');document.getElementById('panel'+i).classList.add('on')};
+  tabsEl.appendChild(b);
+  const p=document.createElement('div');p.className='panel'+(i===0?' on':'');p.id='panel'+i;
+  p.innerHTML=`<div><span class="cadge">${d.cad}</span><div class="dtitle">${d.t}</div><p class="oneline">${d.one}</p>
+    <div class="vs">
+      <div class="vrow"><div class="vlabel">HOW IT'S DONE TODAY</div><p>${d.today}</p></div>
+      <div class="vrow penny"><div class="vlabel">HOW PENNY DOES IT</div><p>${d.penny}</p></div>
+    </div></div>
+    <div class="proof"><div class="pn">${d.pn}</div><div class="pl">${d.pl}</div>
+    <blockquote>${d.q}<cite>${d.qw}</cite></blockquote></div>`;
+  panelsEl.appendChild(p);
+});
+
+/* ---------- build resources ---------- */
+document.getElementById('rgrid').innerHTML=resources.map(r=>`
+  <div class="rcard"><div class="duty">${r.d}</div><h3>${r.t}</h3>
+  <details open><summary>1 · WHAT'S DIFFERENT</summary><div class="rt">${r.a}</div></details>
+  <details><summary>2 · WHERE THE OLD WAY BREAKS</summary><div class="rt">${r.b}</div></details>
+  <details><summary>3 · TIME &amp; COST SAVED</summary><div class="rt">${r.c}</div></details>
+  <details><summary>4 · WHAT IT FREES YOU FOR</summary><div class="rt">${r.d2}</div></details>
+  <details><summary>5 · HOW PENNY SOLVES IT</summary><div class="rt">${r.e}</div></details>
+  </div>`).join('');
+
+/* ---------- build customers page ---------- */
+document.getElementById('cslabs').innerHTML=customers.map(c=>`
+  <div class="slab"><div class="sv">${c.v}</div><h3>${c.n}</h3>
+  <p class="prob">${c.p}</p><div class="outcome">${c.o}</div><p class="prob">${c.ol}</p>
+  <blockquote>${c.q}<cite style="font-style:normal;font-family:var(--mono);font-size:11px;color:var(--graphite);display:block;margin-top:8px">${c.w} · ILLUSTRATIVE CASE STUDY</cite></blockquote></div>`).join('');
+
+/* ---------- router ---------- */
+function route(){
+  const h=(location.hash.replace('#/','')||'home');
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('show',p.dataset.page===h));
+  document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===h));
+  window.scrollTo(0,0);
+  if(h==='home'){printReceipt();}
+  observeRv();
 }
-const so=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){countUp(e.target.querySelector('.n'));so.unobserve(e.target)}}),{threshold:.5});
-document.querySelectorAll('.stat').forEach(s=>so.observe(s));
+window.addEventListener('hashchange',route);
+
+/* ---------- reveal on scroll ---------- */
+let io;
+function observeRv(){
+  if(io)io.disconnect();
+  io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+  document.querySelectorAll('.page.show .rv').forEach((el,i)=>{el.style.transitionDelay=(Math.min(i%5,4)*60)+'ms';io.observe(el)});
+}
+
+/* ---------- receipt print animation ---------- */
+let printed=false;
+function printReceipt(){
+  if(printed)return;printed=true;
+  document.querySelectorAll('#receipt .ritem').forEach((r,i)=>setTimeout(()=>r.classList.add('printed'),500+i*420));
+}
+
+/* ---------- count-up stats ---------- */
+const so=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){const el=e.target;so.unobserve(el);
+    const t=+el.dataset.count,suf=el.dataset.suffix||'',t0=performance.now();
+    (function tick(now){const p=Math.min((now-t0)/1100,1);
+      el.textContent=Math.round(t*(1-Math.pow(1-p,3))).toLocaleString()+suf;
+      if(p<1)requestAnimationFrame(tick)})(t0);}
+}),{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>so.observe(el));
+
+/* ---------- forms (mock) ---------- */
+function captured(e){e.preventDefault();const b=e.target.querySelector('button');b.textContent='ON THE LIST ✓';b.style.background='var(--green)';e.target.querySelector('input').disabled=true;}
+function demoSent(e){e.preventDefault();document.querySelector('#demoform form').style.display='none';document.getElementById('sentmsg').style.display='block';}
+
+/* ---------- v2: chapters ---------- */
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let chI=0, chTimer=null;
+const chTabs=[...document.querySelectorAll('.ch-tab')], chs=[...document.querySelectorAll('.ch')];
+function setCh(i){chI=i;
+  chTabs.forEach((t,j)=>{t.classList.remove('on');});
+  chs.forEach((c,j)=>c.classList.toggle('on',j===i));
+  requestAnimationFrame(()=>chTabs[i].classList.add('on'));}
+function startCh(){if(REDUCED||chTimer)return;chTimer=setInterval(()=>setCh((chI+1)%chs.length),6000);}
+function stopCh(){clearInterval(chTimer);chTimer=null;}
+chTabs.forEach((t,i)=>t.addEventListener('click',()=>{stopCh();setCh(i);startCh();}));
+const story=document.getElementById('story');
+if(story){story.addEventListener('mouseenter',stopCh);story.addEventListener('mouseleave',startCh);startCh();}
+
+/* ---------- v2: Penny's eyes follow the cursor ---------- */
+const pup=document.querySelector('.avatar-holder .p-pupils');
+if(pup&&!REDUCED){document.addEventListener('mousemove',e=>{
+  const r=pup.getBoundingClientRect(); if(!r.width)return;
+  const dx=Math.max(-1,Math.min(1,(e.clientX-(r.left+r.width/2))/280));
+  const dy=Math.max(-1,Math.min(1,(e.clientY-(r.top+r.height/2))/280));
+  pup.style.animation='none';
+  pup.style.transform=`translate(${(dx*7).toFixed(1)}px,${(dy*5).toFixed(1)}px)`;
+},{passive:true});}
+
+/* ---------- v2: scroll progress seal-bar ---------- */
+const prog=document.getElementById('progress');
+addEventListener('scroll',()=>{const h=document.documentElement;
+  prog.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';},{passive:true});
+
+/* ---------- v2: receipt reprint ---------- */
+function reprint(){const items=document.querySelectorAll('#receipt .ritem');
+  items.forEach(r=>r.classList.remove('printed'));
+  items.forEach((r,i)=>setTimeout(()=>r.classList.add('printed'),200+i*380));}
+
+route();
 </script>
 </body>
 </html>
