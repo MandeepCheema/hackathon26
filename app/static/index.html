@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penny Console · McContext</title>
+<link rel="icon" type="image/svg+xml" href="/static/penny-avatar.svg">
+<link rel="stylesheet" href="/static/console.css">
+</head>
+<body>
+
+<div class="masthead"><div class="mh-in">
+  <div class="logo"><img src="/static/penny-avatar.svg" alt="Penny"></div>
+  <div class="brand">Penny<span class="accent">.</span><small>Controls Copilot · McContext Finance</small></div>
+  <div class="live"><span class="pulse"></span> <span id="conn">connecting</span></div>
+  <div class="clock" id="clock"></div>
+  <div class="who"><b>R. Alvarez</b> · Controller</div>
+</div></div>
+
+<div class="wrap">
+  <div class="kpis">
+    <div class="kpi scan"><div class="n tnum" id="k-scan">0</div><div class="l">Transactions scanned</div></div>
+    <div class="kpi inv"><div class="n tnum" id="k-inv">0</div><div class="l">Investigating now</div></div>
+    <div class="kpi flag"><div class="n tnum" id="k-flag">0</div><div class="l">Flagged</div><div class="sub" id="k-exp">$0 exposure</div></div>
+    <div class="kpi clr"><div class="n tnum" id="k-clr">0</div><div class="l">Checked &amp; cleared</div></div>
+  </div>
+
+  <div class="console">
+    <div class="panel chatpane">
+      <div class="chathead"><div class="colhead">Ask Penny <span class="ct" id="backend-chip">live session</span></div></div>
+      <div class="thread" id="thread"></div>
+      <div class="chips" id="chips">
+        <button class="chip" data-q="Why is West Loop short on cash?">Why is West Loop short on cash?</button>
+        <button class="chip" data-q="Was the $420 FizzWorks payment a duplicate?">$420 FizzWorks — duplicate?</button>
+        <button class="chip" data-q="Anything unusual in today's stream?">Anything unusual today?</button>
+      </div>
+      <div class="composer">
+        <input id="ask" placeholder="Ask about any store, supplier, invoice or cashier — or click a flagged case →" aria-label="Ask Penny">
+        <button id="send">Ask</button>
+      </div>
+    </div>
+
+    <div class="rail">
+      <div class="panel flowbar">
+        <div class="stage s-in"><div class="sn tnum" id="f-in">0</div><div class="sl">Incoming</div></div>
+        <div class="arrow">→</div>
+        <div class="stage s-inv"><div class="sn tnum" id="f-inv">0</div><div class="sl">Investigating</div></div>
+        <div class="arrow">→</div>
+        <div class="stage s-flag"><div class="sn tnum" id="f-flag">0</div><div class="sl">Flagged</div></div>
+        <div class="arrow">·</div>
+        <div class="stage s-clr"><div class="sn tnum" id="f-clr">0</div><div class="sl">Cleared</div></div>
+      </div>
+      <div class="panel railsec">
+        <div class="colhead">Live stream <span class="ct">live</span></div>
+        <div class="ticker" id="ticker"></div>
+      </div>
+      <div class="panel railsec">
+        <div class="colhead">Flagged — click to process</div>
+        <div class="flags scroll" id="flags"></div>
+      </div>
+      <div class="panel railsec">
+        <div class="colhead">Cleared — decoys Penny didn't flag</div>
+        <div class="clears scroll" id="clears"></div>
+      </div>
+      <div class="railctl">
+        <button class="mini leak" id="injectBtn">⚡ Inject leak</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Live build — rail over SSE (<code>/events</code>), chat over streamed NDJSON (<code>/turn</code>).
+    Backend: <code>PENNY_BACKEND=sim</code> (scripted) or <code>agent</code> (the real Penny via
+    <code>agent/sdk_loop.py</code>, in-process). Confirm/Dismiss are app-side with an audit trail.
+  </div>
+
+  <div class="btwrap">
+    <div class="btfoot">
+      <img src="/static/bt-mark.svg" alt="" class="btmark">
+      <span class="btword">Builder&nbsp;Tribe</span>
+      <span class="btsub">· Atlan AI Hackathon 2026</span>
+    </div>
+  </div>
+</div>
+
+<script src="/static/console.js"></script>
+</body>
+</html>
