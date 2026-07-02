@@ -109,6 +109,11 @@ async function streamInto(body, url, payload) {
         const ev = JSON.parse(line);
         if (ev.type === "trace") traceLine(body, ev.tool, ev.text);
         else if (ev.type === "sys") sysMsg(ev.html);
+        else if (ev.type === "guardrail") {
+          const g = document.createElement("div"); g.className = "guardrail enter";
+          g.innerHTML = `<span class="gshield" aria-hidden="true">🛡</span><div>${ev.html}</div>`;  // server-escaped
+          body.appendChild(g); scrollDown();
+        }
         else if (ev.type === "verdict") {
           spin.remove();
           const v = document.createElement("div"); v.className = "pverdict " + (ev.kind === "flag" ? "flag" : "clr");

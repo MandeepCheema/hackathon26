@@ -15,7 +15,11 @@ class CaptureMCP:
         self.real = real
         self.submitted = []
         self.forbidden = []
+        self.guardrails = []   # GR1/GR5 pre-submit refusals (recorded by sdk_loop)
         self.sql_calls = 0
+
+    def record_guardrail(self, tool, message):
+        self.guardrails.append({"tool": tool, "message": message})
 
     def run_sql(self, query, purpose=""):
         self.sql_calls += 1

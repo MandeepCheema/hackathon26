@@ -56,6 +56,13 @@ async def _agent_session(session_id: str):
     from claude_agent_sdk import ClaudeSDKClient
     from eval.capture_mcp import CaptureMCP
 
+    # Subscription-auth invariant (agent/auth.py): drop ANTHROPIC_API_KEY so a local
+    # chat never bills the $50 bench workspace. Headless server (Railway) sets
+    # PENNY_SERVER=1 + CLAUDE_CODE_OAUTH_TOKEN instead.
+    if os.environ.get("PENNY_SERVER") != "1":
+        from agent.auth import ensure_subscription_auth
+        ensure_subscription_auth()
+
     system = yaml.safe_load(open("agent/agent.yaml"))["system"]
     capture = CaptureMCP(MCPClient(os.environ["MCCTX_MCP_URL"], os.environ["MCP_AUTH_TOKEN"]))
     client = ClaudeSDKClient(options=_build_options(system, capture))
@@ -74,6 +81,8 @@ async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]
         sess = _sessions[session_id]
         client, capture = sess["client"], sess["capture"]
         n_before = len(capture.submitted)
+        n_forb = len(getattr(capture, "forbidden", []))
+        n_guard = len(getattr(capture, "guardrails", []))
 
         await client.query(text)
         finals: list[str] = []
@@ -98,8 +107,17 @@ async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]
         # captured verdicts → cases in the rail
         for sub in capture.submitted[n_before:]:
             cases.from_verdict_event({"tool": sub["tool"], "args": sub["args"]})
-        if getattr(capture, "forbidden", None):
-            yield {"type": "sys", "html": "⛔ scope-fence: " + html.escape(str(capture.forbidden[-1]))}
+
+        # guardrail moments — the pitch beat: show what Penny REFUSED and why
+        for f in getattr(capture, "forbidden", [])[n_forb:]:
+            yield {"type": "guardrail", "kind": "scope-fence",
+                   "html": f"<b>Scope fence</b> — refused <code>{html.escape(f['tool'])}</code>: "
+                           "outside Penny's six finance duties. Action was blocked, not executed."}
+        for g in getattr(capture, "guardrails", [])[n_guard:]:
+            gr = "GR1" if "GR1" in g["message"] else ("GR5" if "GR5" in g["message"] else "guardrail")
+            yield {"type": "guardrail", "kind": gr,
+                   "html": f"<b>{gr}</b> — blocked <code>{html.escape(g['tool'])}</code>: "
+                           f"{html.escape(g['message'].split(': ', 1)[-1])}"}
 
         answer = html.escape("\n".join(finals)).replace("\n", "<br>")
         yield {"type": "verdict", "kind": "clr", "html": answer or "(no answer)"}

@@ -134,6 +134,8 @@ def _build_options(system: str, client) -> ClaudeAgentOptions:
         async def _action(args: dict, _name=name):
             allowed, violation = validate_submit(_name, args, state["sql_calls"])
             if not allowed:
+                if hasattr(client, "record_guardrail"):
+                    client.record_guardrail(_name, violation)
                 return {"content": [{"type": "text", "text": json.dumps({"ok": False, "error": violation})}]}
             result = client.call(_name, args)
             return {"content": [{"type": "text", "text": json.dumps(result, default=str)}]}
