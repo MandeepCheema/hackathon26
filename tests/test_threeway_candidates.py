@@ -10,4 +10,5 @@ def test_finds_exactly_the_six_unexplained_exceptions():
     assert by.get("pol_00039")=="over_billed_qty"
     assert by.get("pol_00092")=="price_variance"
     assert "pol_00150" not in by   # credit-memo-explained TRAP (memo_00001 covers it exactly)
-    assert len(rows)==6
+    assert "inv_00093" in by and by["inv_00093"]=="duplicate_invoice"  # reused-number double-pay
+    assert len(rows)==7

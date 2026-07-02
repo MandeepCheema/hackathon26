@@ -10,6 +10,12 @@ Do NOT flag lines that reconcile within the materiality threshold ($5.00 AND 0.5
 within the price tolerance (0.5% of contracted price). Cite `finpol_materiality` and
 `finpol_pricetol` in every note.
 
+## Scope
+When the request names a specific supplier / store / month ("did Crust & Co bill Capitol Hill
+correctly in June?"), run the FULL duty logic filtered to that supplier+store+period — check every
+exception type on those invoices, not just whether a company-wide top-finding happens to fall in
+scope. A clean result is a real answer: say what you checked and that it reconciles.
+
 ## Procedure
 1. Run `agent/duties/policy_lookup.sql` via `run_sql` and locate the active rows for
    `finpol_materiality` (don't raise under $5.00 AND under 0.5%) and `finpol_pricetol` (price
@@ -22,6 +28,12 @@ within the price tolerance (0.5% of contracted price). Cite `finpol_materiality`
 3. For each returned row, determine `exception_type` from the SQL result:
    - `over_billed_qty` — billed quantity exceeds received quantity beyond materiality.
    - `price_variance` — billed unit cost exceeds contracted unit cost beyond tolerance.
+   - `duplicate_invoice` — the same supplier invoice_number appears on 2+ paid invoices with the
+     SAME amount and no offsetting credit memo (the same bill paid twice, often booked to two POs).
+     Cite both invoice ids and the shared number in the note. A shared number with DIFFERENT amounts
+     is a reused number for different goods — NOT an exception, do not flag.
+   The SQL also leaves room for `tax_miscalc` and `unauthorized_charge` — if you spot a tax line that
+   disagrees with the subtotal, or a freight/charge with no PO backing, flag it with that type.
 4. Submit one call per row:
    `submit_match_exception(po_id, po_line_id, exception_type, amount_cents, note)`.
    The note must state the recoverable amount, the exception type, and cite both

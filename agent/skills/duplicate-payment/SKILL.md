@@ -4,8 +4,11 @@ description: Detect invoices paid more than once or PO lines covered by multiple
 ---
 # Duplicate payment detection
 
-**Rule (from `submit_duplicate_payment`):** A real duplicate is either (a) the same `invoice_id`
-paid more than once, or (b) the same PO line covered by two or more distinct invoices. Submit
+**Rule (from `submit_duplicate_payment`):** A real duplicate is (a) the same `invoice_id` paid more
+than once, (b) the same PO line covered by two or more distinct invoices, OR (c) the same supplier
+`invoice_number` on two distinct invoices with the SAME amount, both paid (a reused invoice number
+booked to two POs and paid twice — e.g. INV-4493). A shared number with DIFFERENT amounts is a
+reused number for different goods → NOT a duplicate. Submit
 `submit_duplicate_payment` ONLY for rows returned by the candidate SQL. **Do NOT flag recurring
 same-amount payments that carry distinct invoice IDs across separate periods — those are legitimate
 recurring charges, not duplicates.**

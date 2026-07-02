@@ -27,6 +27,7 @@ EXPECTED = [
     {"duty":"threeway","entity":"pol_00221","status":"price_variance"},
     {"duty":"threeway","entity":"pol_00151","status":"over_billed_qty"},
     {"duty":"threeway","entity":"pol_00220","status":"over_billed_qty"},
+    {"duty":"threeway","entity":"inv_00093","status":"duplicate_invoice"},  # INV-4493 same number+amount on inv_00093/94, both paid $40, no memo
     # settlement (7 real shortfalls — three TRAPS excluded, fully explained by logged
     # fin_settlement_adjustments: str_008 03-02 terminal_reset $180, str_010 03-16 refund
     # batch $220, str_010 03-17 chargeback $150 → residual 0, do NOT flag):
@@ -37,7 +38,9 @@ EXPECTED = [
     {"duty":"settlement","entity":"str_007:2026-04-10","status":"shortfall"},
     {"duty":"settlement","entity":"str_010:2026-03-19","status":"shortfall"},
     {"duty":"settlement","entity":"str_007:2026-04-08","status":"shortfall"},
-    # duplicate-payment: NO positive fixtures — precision test (agent must flag none;
-    # inv_00295 'voided — corrected & re-issued' + memo_00002 is the engineered decoy).
+    # duplicate-payment: ONE real dup — INV-4493 reused number ($40) paid on both inv_00093 & inv_00094.
+    {"duty":"dup","entity":"inv_00093","status":"duplicate"},
+    # decoys still cleared: inv_00295 voided+reissued (memo_00002); meat INV-4471 shared number but
+    # DIFFERENT amounts ($765 vs $3120) = reused number for different goods, not a dup.
     # cogs-leakage: NO positive fixtures — abstention test (agent must submit within_tolerance).
 ]
