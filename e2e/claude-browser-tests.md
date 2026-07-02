@@ -31,7 +31,9 @@ window.__t0 = document.getElementById("ticker").children.length
 // wait 15s, then:
 JSON.stringify({conn:document.getElementById("conn").textContent,
  grew:document.getElementById("ticker").children.length > window.__t0,
- realNames:[...document.querySelectorAll("#ticker .t2")].some(e=>/Back Bay|Buckhead|SoMa|LoDo|Midtown/.test(e.textContent))})
+ realNames:[...document.querySelectorAll("#ticker .tk-branch")].some(e=>/Back Bay|Buckhead|SoMa|LoDo|Midtown/.test(e.textContent))})
+// NOTE: v8 ticker rows are .tkr (txn) / .tkc (candidate); branch name lives in .tk-branch.
+// If a selector returns [], read the deployed console.js FIRST — markup may have moved again.
 // PASS: conn "streaming" · grew true · realNames true (post-PR#11)
 ```
 
