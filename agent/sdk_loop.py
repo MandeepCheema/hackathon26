@@ -150,11 +150,23 @@ def validate_submit(tool_name: str, args: dict, sql_calls: int):
 DUTIES = [p.name for p in sorted(SKILLS_DIR.iterdir()) if (p / "SKILL.md").exists()] if SKILLS_DIR.exists() else []
 
 
+DUTIES_DIR = pathlib.Path(__file__).parent / "duties"
+
+
 def read_skill_text(duty: str) -> str:
     path = SKILLS_DIR / duty / "SKILL.md"
     if not path.exists():
         return f"Unknown duty '{duty}'. Available: {', '.join(DUTIES)}"
-    return path.read_text()
+    content = path.read_text()
+    # Inline any referenced candidate SQL — the agent has no file access, and a
+    # rewritten-from-memory query is where trap regressions creep in (the canonical
+    # SQL encodes the decoy exclusions verbatim). Mirrors deploy/cma_deploy.py.
+    for sql_path in sorted(DUTIES_DIR.glob("*.sql")) if DUTIES_DIR.exists() else []:
+        ref = f"agent/duties/{sql_path.name}"
+        if ref in content:
+            content += (f"\n\n## Candidate SQL ({sql_path.name}) — run this VERBATIM via run_sql; "
+                        f"follow-up queries are allowed after\n```sql\n{sql_path.read_text()}\n```\n")
+    return content
 
 
 DEFAULT_MODEL = "claude-opus-4-8"   # scan/eval/bench parity — hardest adjudication

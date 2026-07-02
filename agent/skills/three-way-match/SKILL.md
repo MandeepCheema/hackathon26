@@ -29,6 +29,12 @@ within the price tolerance (0.5% of contracted price). Cite `finpol_materiality`
 5. If the SQL returns zero rows, do not submit anything — there are no exceptions.
 
 ## Guardrails
+- **Price is judged against the contract IN FORCE ON THE INVOICE DATE** (`fin_price_list` row where
+  invoiced_at is between effective_date and end_date) — NEVER the contract as of today. A supplier
+  billing a future price increase early (e.g. new price effective 05-01, billed on 04-14) IS a
+  price_variance at the invoice date. This is an engineered temporal trap.
+- Run the provided candidate SQL VERBATIM — it encodes every decoy exclusion. Rewriting it from
+  memory is how traps slip back in. Follow-up queries for evidence detail are fine.
 - Never flag a line whose variance falls within BOTH the $5.00 threshold AND the 0.5%-of-line-value
   threshold — both conditions must fail materiality to flag.
 - Never flag a price deviation of 0.5% or less of the contracted price (within `finpol_pricetol`).

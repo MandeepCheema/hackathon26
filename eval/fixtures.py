@@ -11,6 +11,7 @@ EXPECTED = [
     {"duty":"loss", "entity":"stf_006_3", "status":"refer_investigation"},  # role=cashier, z=3.62, 2-of-8 at store = individual
     {"duty":"loss", "entity":"stf_006_5", "status":"refer_investigation"},  # role=cashier, z=2.94, individual
     {"duty":"loss", "entity":"stf_007_4", "status":"refer_investigation"},  # 15/15 of store's no_sale opens = individual (no_sale_opens)
+    {"duty":"loss", "entity":"stf_009_2", "status":"refer_investigation"},  # 9 card refunds ALL to ONE card (7788, $197.72) = refund-to-own-card; found by the agent, DB-verified
     {"duty":"loss", "entity":"stf_008_2", "status":"refer_investigation"},  # 24 discounts vs peers <=1 (discount_abuse)
     {"duty":"loss", "entity":"stf_009_6", "status":"refer_investigation"},  # LAYERED TRAP: 'trainee hired 06-18' is FABRICATED — all 57 txns on 05-27,
                                                                             # BEFORE the hire date (only staffer like this). 34 voids $612.80 ≈ str_009's
