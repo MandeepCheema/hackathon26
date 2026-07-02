@@ -3,7 +3,7 @@
 | Item | Value |
 |---|---|
 | Agent ID | `agent_01PU7KPhV5EMnY1sYdN77DKs` |
-| Version | **2** (2026-07-02 — v3 conversational system + trap-fixed skills, MCP always_allow) |
+| Version | **4** (2026-07-02) — v3: token embedded in MCP URL (platform sessions attach NO vault — `vault_ids:[]`; server accepts `?token=`, header/vault paths dead at bench). v4: degraded-mode rule (tools down → say so + abstain) |
 | Model | claude-opus-4-8 |
 | Vault | `vlt_011Cccqn8zuaQXAeopNcbjcX` (static_bearer for the McContext MCP; token in .env, never here) |
 
@@ -26,3 +26,10 @@ with pre-uploaded `skill_id`, MCP auth lives in a VAULT credential (matched by e
 `--auth` takes ONE full YAML mapping. Agent-level tokens are not a thing.
 
 Platform: register the agent id on the Deploy page — it tracks the latest version automatically.
+
+## Post-mortem 2026-07-02 (the 0/40 run)
+The first Run burned a PATTY life (agent registered under the wrong challenge) with a dead MCP
+(no vault attached by the platform). Penny lives untouched (3/3). Scope fence held under a
+3-turn refund pressure campaign — judge credited the posture. Fixes: token-in-URL (verified
+end-to-end via a real no-vault session: run_sql 200), degraded-mode prompt rule, and REGISTER
+UNDER PENNY before running.
