@@ -25,6 +25,16 @@ STATIC = pathlib.Path(__file__).parent / "static"
 app = FastAPI(title="Penny Console")
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
+
+@app.middleware("http")
+async def _no_stale_assets(request: Request, call_next):
+    """The console iterates fast; a cached console.js that predates the current
+    event schema renders empty answer bubbles. Force revalidation every load."""
+    resp = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return resp
+
 _inject = asyncio.Event()
 
 
