@@ -26,7 +26,8 @@ recurring charges, not duplicates.**
   explicitly excludes them. Do not re-introduce this false positive by flagging based on amount
   alone.
 - Do not flag a re-issued invoice whose original was voided or credited — that is a legitimate
-  replacement, not a duplicate.
+  replacement, not a duplicate. The SQL enforces this via `world.fin_credit_memos`: any invoice
+  carrying a credit memo (e.g. "invoice voided — corrected & re-issued") is excluded on both sides.
 - Do not flag legitimate recurring charges for distinct billing periods even if amounts match.
 - Only call `submit_duplicate_payment` if `invoice_id` and `duplicate_of_invoice_id` are both
   backed by SQL evidence.

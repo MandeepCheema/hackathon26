@@ -83,6 +83,40 @@ _ACCUSATORY = re.compile(
 )
 
 
+# The MCP contract, enforced: status enums + required args per graded tool. A submit
+# with a wrong enum or a missing id is a wasted graded call at the bench — block it
+# locally with an error message the agent can act on.
+TOOL_CONTRACT = {
+    "submit_cash_variance": {
+        "required": ["store_id", "business_date", "status"],
+        "enums": {"status": {"balanced", "short", "over", "pattern_short"}},
+    },
+    "submit_loss_flag": {
+        "required": ["staff_id", "store_id", "risk_level", "primary_signal"],
+        "enums": {"risk_level": {"refer_investigation", "monitor", "clear"},
+                  "primary_signal": {"void_rate", "refund_to_card", "no_sale_opens",
+                                     "discount_abuse", "refund_no_sale"}},
+    },
+    "submit_match_exception": {
+        "required": ["po_id", "po_line_id", "exception_type", "amount_cents"],
+        "enums": {"exception_type": {"price_variance", "over_billed_qty", "short_received",
+                                     "duplicate_invoice", "unauthorized_charge", "tax_miscalc"}},
+    },
+    "submit_duplicate_payment": {
+        "required": ["supplier_id", "invoice_id", "duplicate_of_invoice_id", "amount_cents"],
+        "enums": {},
+    },
+    "submit_settlement": {
+        "required": ["store_id", "business_date", "status"],
+        "enums": {"status": {"reconciled", "shortfall", "over_deposit", "timing_pending"}},
+    },
+    "submit_cogs_variance": {
+        "required": ["store_id", "period", "status"],
+        "enums": {"status": {"within_tolerance", "leakage", "favorable"}},
+    },
+}
+
+
 def validate_submit(tool_name: str, args: dict, sql_calls: int):
     """Return (allowed, violation_message). Pure — unit-testable."""
     if tool_name not in PENNY_TOOL_NAME_SET:
@@ -95,6 +129,21 @@ def validate_submit(tool_name: str, args: dict, sql_calls: int):
     if hit:
         return False, (f"GUARDRAIL_VIOLATION GR5: accusatory term '{hit.group(0)}' in the note for "
                        f"{tool_name}. Describe the pattern, not the person's intent, and re-submit.")
+
+    contract = TOOL_CONTRACT[tool_name]
+    missing = [k for k in contract["required"] if not str(args.get(k, "") or "").strip()]
+    if missing:
+        return False, (f"CONTRACT_VIOLATION: {tool_name} is missing required field(s) {missing}. "
+                       "Fill them from SQL evidence and re-submit.")
+    for field, allowed_values in contract["enums"].items():
+        if args.get(field) not in allowed_values:
+            return False, (f"CONTRACT_VIOLATION: {tool_name}.{field}='{args.get(field)}' is not one of "
+                           f"{sorted(allowed_values)}. Use the exact enum value and re-submit.")
+    # duty-specific shape rule from the cash tool description
+    if tool_name == "submit_cash_variance" and args.get("status") == "pattern_short" \
+            and args.get("business_date") != "pattern":
+        return False, ("CONTRACT_VIOLATION: a pattern_short verdict must use business_date='pattern' "
+                       "(it is a persistent pattern, not a single day). Re-submit with that.")
     return True, None
 
 

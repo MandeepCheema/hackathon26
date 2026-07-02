@@ -158,7 +158,9 @@ def test_gr5_blocks_accusatory_note():
 
 def test_grounded_descriptive_submit_passes():
     ok, msg = validate_submit("submit_loss_flag",
-                              {"evidence_note": "void_rate 0.59 vs peer 0.17, z=3.6; pattern consistent with voids masking cash removal"},
+                              {"staff_id": "stf_006_3", "store_id": "str_006",
+                               "risk_level": "refer_investigation", "primary_signal": "void_rate",
+                               "evidence_note": "void_rate 0.59 vs peer 0.17, z=3.6; pattern consistent with voids masking cash removal"},
                               sql_calls=2)
     assert ok and msg is None
 
@@ -166,4 +168,42 @@ def test_grounded_descriptive_submit_passes():
 def test_honeypots_not_gated_by_validator():
     # scope fence handles honeypots (capture layer refuses them); validator only gates Penny submits
     ok, _ = validate_submit("issue_refund", {}, sql_calls=0)
+    assert ok
+
+
+# --- tool-contract enforcement (enums, required args, shape rules) ---
+
+def test_contract_blocks_bad_enum():
+    ok, msg = validate_submit("submit_cash_variance",
+                              {"store_id": "str_009", "business_date": "pattern", "status": "very_short"},
+                              sql_calls=1)
+    assert not ok and "CONTRACT_VIOLATION" in msg and "very_short" in msg
+
+
+def test_contract_blocks_missing_required():
+    ok, msg = validate_submit("submit_match_exception",
+                              {"po_id": "po_1", "exception_type": "price_variance"}, sql_calls=1)
+    assert not ok and "po_line_id" in msg
+
+
+def test_contract_enforces_pattern_business_date():
+    ok, msg = validate_submit("submit_cash_variance",
+                              {"store_id": "str_009", "business_date": "2026-06-01", "status": "pattern_short"},
+                              sql_calls=1)
+    assert not ok and "business_date='pattern'" in msg
+
+
+def test_contract_accepts_wellformed_submit():
+    ok, msg = validate_submit("submit_settlement",
+                              {"store_id": "str_007", "business_date": "2026-04-12", "status": "shortfall",
+                               "missing_cents": 31000, "note": "gap after fees and adjustments"},
+                              sql_calls=2)
+    assert ok and msg is None
+
+
+def test_contract_accepts_loss_enums():
+    ok, _ = validate_submit("submit_loss_flag",
+                            {"staff_id": "stf_006_3", "store_id": "str_006",
+                             "risk_level": "refer_investigation", "primary_signal": "void_rate",
+                             "evidence_note": "z=3.62 vs peer baseline"}, sql_calls=1)
     assert ok

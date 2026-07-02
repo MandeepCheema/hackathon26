@@ -15,9 +15,10 @@ explained; exclude those days.
 1. Run `agent/duties/settlement.sql` via `run_sql`. Each returned row has:
    `store_id`, `business_date`, `register_card_cents`, `expected_fee_cents`, `deposit_cents`,
    `missing_cents`.
-2. For each returned row, check whether a logged adjustment exists in
-   `world.fin_settlement_adjustments` for that `(store_id, business_date)`. If one exists,
-   the gap is explained — skip that row; do not submit.
+2. The SQL already nets logged adjustments (`world.fin_settlement_adjustments`: refunds,
+   chargebacks, terminal resets, timing) — the `adjustment_cents` column shows what was applied and
+   `missing_cents` is the residual AFTER it. Adjustment-explained days (e.g. a chargeback or a
+   daily refund batch exactly covering the gap) never appear in the results — do not re-add them.
 3. For every remaining row (gap is real and unexplained):
    `submit_settlement(store_id, business_date, status='shortfall', register_card_cents,
    expected_fee_cents, deposit_cents, missing_cents, note)`.

@@ -29,3 +29,6 @@ dist/
 *.sqlite
 *.db
 scratch/
+
+deploy/.build/
+deploy/cma_state.json

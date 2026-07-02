@@ -14,8 +14,11 @@ within the price tolerance (0.5% of contracted price). Cite `finpol_materiality`
 1. Run `agent/duties/policy_lookup.sql` via `run_sql` and locate the active rows for
    `finpol_materiality` (don't raise under $5.00 AND under 0.5%) and `finpol_pricetol` (price
    within 0.5% of contract is within tolerance). Note their exact ids.
-2. Run `agent/duties/three_way_match.sql` via `run_sql`. The query already applies these thresholds;
-   each returned row represents a genuine, policy-exceeding exception.
+2. Run `agent/duties/three_way_match.sql` via `run_sql`. The query already applies these
+   thresholds AND the two engineered explanations: a **credit memo** on the line's invoice
+   (`world.fin_credit_memos` — the supplier already resolved it) and a **current contracted price**
+   (`world.fin_price_list` — billed within 0.5% of contract is within tolerance even above the PO
+   cost). Each returned row is a genuine, unexplained, policy-exceeding exception.
 3. For each returned row, determine `exception_type` from the SQL result:
    - `over_billed_qty` — billed quantity exceeds received quantity beyond materiality.
    - `price_variance` — billed unit cost exceeds contracted unit cost beyond tolerance.
