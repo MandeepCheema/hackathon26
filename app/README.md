@@ -35,6 +35,7 @@ scope-fence violations surface as ⛔ system messages.
 | `SIMULATOR` | `1` | `0` disables the rail ticker/case simulator |
 | `APP_DB` | `penny_console.db` | SQLite path (cases, turns, audit, stats) |
 | `MCCTX_MCP_URL` / `MCP_AUTH_TOKEN` | — | required for `agent` backend |
+| `PENNY_MAX_TURNS_PER_SESSION` | `25` | agent-turn cap per browser session (cost governor) |
 | `WORLD_PG_URI` | — | read-only world DB; presence enables the **real ticker feed** |
 | `FEED` | `auto` | `stream` (force) · `sim` (force off) · `auto` (on if `WORLD_PG_URI`) |
 | `FEED_SPEED` | `60` | finance_stream time compression (1 real s ≈ 1 sim min) |

@@ -54,9 +54,19 @@ async def index():
     return FileResponse(STATIC / "index.html")
 
 
+def _agent_ready() -> bool:
+    """Image can run the agent backend: SDK importable + bundled CLI present."""
+    try:
+        import claude_agent_sdk, pathlib, shutil
+        bundled = pathlib.Path(claude_agent_sdk.__file__).parent / "_bundled" / "claude"
+        return bundled.exists() or shutil.which("claude") is not None
+    except ImportError:
+        return False
+
+
 @app.get("/healthz")
 async def healthz():
-    return {"ok": True, "backend": os.environ.get("PENNY_BACKEND", "sim"), "feed": "stream" if feed.enabled() else "sim"}
+    return {"ok": True, "backend": os.environ.get("PENNY_BACKEND", "sim"), "feed": "stream" if feed.enabled() else "sim", "agent_ready": _agent_ready()}
 
 
 @app.get("/history")
