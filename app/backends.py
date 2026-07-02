@@ -138,8 +138,8 @@ async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]
                    "html": f"<b>{gr}</b> — blocked <code>{html.escape(g['tool'])}</code>: "
                            f"{html.escape(g['message'].split(': ', 1)[-1])}"}
 
-        answer = html.escape("\n".join(finals)).replace("\n", "<br>")
-        yield {"type": "verdict", "kind": "clr", "html": answer or "(no answer)"}
+        # raw text — the client renders it as (safely escaped) markdown
+        yield {"type": "verdict", "kind": "clr", "text": "\n".join(finals) or "(no answer)"}
         store.add_turn(session_id, "penny", "\n".join(finals), {"backend": "agent"})
     except Exception as e:  # surface, don't hang the chat
         yield {"type": "verdict", "kind": "flag",

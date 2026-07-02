@@ -3,6 +3,45 @@
 const $ = id => document.getElementById(id);
 const money0 = c => "$" + Math.round(c / 100).toLocaleString();
 const esc = s => { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; };
+
+/* Minimal safe markdown: input is ESCAPED FIRST, then formatting is applied.
+   Covers what Penny writes: headings, bold/italic, `code`, lists, tables, paragraphs. */
+function md(src) {
+  const inline = s => s
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
+  const lines = esc(src).split("\n");
+  const out = []; let i = 0, para = [], list = null;
+  const flushPara = () => { if (para.length) { out.push(`<p>${para.map(inline).join("<br>")}</p>`); para = []; } };
+  const flushList = () => { if (list) { out.push(`<${list.tag}>` + list.items.map(x => `<li>${inline(x)}</li>`).join("") + `</${list.tag}>`); list = null; } };
+  while (i < lines.length) {
+    const L = lines[i];
+    const isTable = L.trim().startsWith("|") && L.includes("|", 2);
+    if (isTable) {
+      flushPara(); flushList();
+      const rows = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) { rows.push(lines[i].trim()); i++; }
+      const cells = r => r.replace(/^\||\|$/g, "").split("|").map(c => inline(c.trim()));
+      const body = rows.filter(r => !/^\|[\s\-:|]+\|$/.test(r));
+      const [head, ...rest] = body;
+      out.push(`<div class="mdtable"><table><thead><tr>${cells(head).map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>` +
+        rest.map(r => `<tr>${cells(r).map(c => `<td>${c}</td>`).join("")}</tr>`).join("") + `</tbody></table></div>`);
+      continue;
+    }
+    const h = L.match(/^(#{1,4})\s+(.*)/);
+    const li = L.match(/^\s*[-•]\s+(.*)/);
+    const ol = L.match(/^\s*\d+[.)]\s+(.*)/);
+    if (h) { flushPara(); flushList(); out.push(`<h${h[1].length + 2} class="mdh">${inline(h[2])}</h${h[1].length + 2}>`); }
+    else if (li) { flushPara(); if (!list || list.tag !== "ul") { flushList(); list = { tag: "ul", items: [] }; } list.items.push(li[1]); }
+    else if (ol) { flushPara(); if (!list || list.tag !== "ol") { flushList(); list = { tag: "ol", items: [] }; } list.items.push(ol[1]); }
+    else if (!L.trim()) { flushPara(); flushList(); }
+    else para.push(L);
+    i++;
+  }
+  flushPara(); flushList();
+  return out.join("");
+}
 // Sticky session: survives page reloads so Penny remembers the conversation.
 // "New session" = clear localStorage key (exposed on the backend chip click).
 const SESSION = (() => {
@@ -27,14 +66,20 @@ function paintKpis(s) {
 }
 
 /* ---- rail rendering ---- */
+const TXK = { "refund": "warn", "void": "warn", "no_sale": "warn" };
 function tickerRow(ev) {
   const d = document.createElement("div");
-  d.className = "tk enter" + (ev.cand ? " cand" : "");
   const t = fmtTime(new Date((ev.ts || Date.now() / 1000) * 1000)).slice(3);
-  d.innerHTML = ev.cand
-    ? `<span class="t1">${t}</span><span class="t2">▸ ${esc(ev.label)}</span>`
-    : `<span class="t1">${t}</span><span class="t2">${esc(ev.branch)}</span><span>${esc(ev.txn)}</span><span class="t4">${money0(ev.amount_cents)}</span>`;
-  const tk = $("ticker"); tk.prepend(d); while (tk.children.length > 7) tk.lastChild.remove();
+  if (ev.cand) {
+    d.className = "tkc enter";
+    d.innerHTML = `<span class="tkc-dot"></span><div><b>Penny picked up a candidate</b><small>${esc(ev.label.replace(/^candidate:\s*/, ""))}</small></div><span class="tk-time">${t}</span>`;
+  } else {
+    const kind = TXK[ev.txn] || "ok";
+    d.className = "tkr enter";
+    d.innerHTML = `<span class="tk-dot ${kind}"></span><span class="tk-branch">${esc((ev.branch || "").replace(/^McContext\s+/, ""))}</span>
+      <span class="tk-type ${kind}">${esc(ev.txn)}</span><span class="tk-amt tnum">${money0(ev.amount_cents)}</span><span class="tk-time">${t}</span>`;
+  }
+  const tk = $("ticker"); tk.prepend(d); while (tk.children.length > 12) tk.lastChild.remove();
 }
 function badgeFor(k) { return k.status === "routed" ? "routed" : k.status === "dismissed" ? "dismissed" : "new"; }
 function flagCard(k) {
@@ -123,7 +168,7 @@ async function streamInto(body, url, payload) {
         else if (ev.type === "verdict") {
           spin.remove();
           const v = document.createElement("div"); v.className = "pverdict " + (ev.kind === "flag" ? "flag" : "clr");
-          v.innerHTML = ev.html;  // server-provided, trusted
+          v.innerHTML = ev.text ? md(ev.text) : ev.html;  // text → safe md; html → sim (trusted)
           body.appendChild(v); scrollDown();
         }
       }
@@ -135,7 +180,24 @@ async function streamInto(body, url, payload) {
     body.appendChild(v); scrollDown();
   }
 }
-function askPenny(q) { userMsg(q); streamInto(pennyMsg(""), "/turn", { session_id: SESSION, text: q }); }
+function enterChatMode() {
+  if (document.body.classList.contains("chat-mode")) return;
+  document.body.classList.remove("hero-mode");
+  document.body.classList.add("chat-mode");
+}
+function askPenny(q) { enterChatMode(); userMsg(q); streamInto(pennyMsg(""), "/turn", { session_id: SESSION, text: q }); }
+
+/* ---- drawer ---- */
+const drawer = $("drawer"), scrim = $("scrim"), menuBtn = $("menuBtn");
+function setDrawer(open) {
+  document.body.classList.toggle("drawer-open", open);
+  menuBtn.setAttribute("aria-expanded", String(open));
+  if (open) { scrim.hidden = false; requestAnimationFrame(() => scrim.classList.add("show")); }
+  else { scrim.classList.remove("show"); setTimeout(() => { scrim.hidden = true; }, 240); }
+}
+menuBtn.onclick = () => setDrawer(!document.body.classList.contains("drawer-open"));
+scrim.onclick = () => setDrawer(false);
+document.addEventListener("keydown", e => { if (e.key === "Escape") setDrawer(false); });
 
 $("send").onclick = () => { const q = $("ask").value.trim(); if (q) { $("ask").value = ""; askPenny(q); } };
 $("ask").addEventListener("keydown", e => { if (e.key === "Enter") $("send").onclick(); });
@@ -144,6 +206,7 @@ $("injectBtn").onclick = () => fetch("/inject", { method: "POST" });
 
 /* ---- case processing in chat ---- */
 async function openCase(id) {
+  enterChatMode(); setDrawer(false);   // land the case IN the chat, drawer out of the way
   const res = await fetch(`/cases/${id}/open`, { method: "POST" });
   if (!res.ok) return;
   const k = await res.json();
@@ -192,9 +255,10 @@ fetch("/healthz").then(r => r.json()).then(h => {
 
 // Replay the stored conversation so a reload doesn't look like amnesia.
 fetch(`/history?session_id=${SESSION}`).then(r => r.json()).then(turns => {
+  if (turns.length) enterChatMode();
   turns.forEach(t => {
     if (t.role === "user") userMsg(t.content);
-    else pennyMsg(esc(t.content).replace(/\n/g, "<br>"));
+    else pennyMsg(md(t.content));
   });
 });
 sysMsg(`Session started · ${fmtDate(new Date())} — Penny watches the stream and answers here.`);
