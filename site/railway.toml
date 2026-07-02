@@ -1,4 +1,4 @@
 # Railway service config — Penny Site (static HTML)
 [deploy]
-healthcheckPath = "/healthz"
+healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
