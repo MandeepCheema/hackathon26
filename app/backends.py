@@ -84,7 +84,9 @@ async def _agent_session(session_id: str):
         system = system + "\n\n" + "\n\n".join(memory)
 
     capture = CaptureMCP(MCPClient(os.environ["MCCTX_MCP_URL"], os.environ["MCP_AUTH_TOKEN"]))
-    client = ClaudeSDKClient(options=_build_options(system, capture))
+    # Chat runs Sonnet (fast, cheap); scans/eval/bench keep Opus via sdk_loop's default.
+    model = os.environ.get("PENNY_MODEL", "claude-sonnet-5")
+    client = ClaudeSDKClient(options=_build_options(system, capture, model=model))
     await client.connect()
     # turn_lock serializes turns on this session: two concurrent queries on one
     # SDK client interleave their response streams and both come back broken.

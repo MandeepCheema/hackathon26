@@ -108,7 +108,10 @@ def read_skill_text(duty: str) -> str:
     return path.read_text()
 
 
-def _build_options(system: str, client) -> ClaudeAgentOptions:
+DEFAULT_MODEL = "claude-opus-4-8"   # scan/eval/bench parity — hardest adjudication
+
+
+def _build_options(system: str, client, model: str = DEFAULT_MODEL) -> ClaudeAgentOptions:
     state = {"sql_calls": 0}
 
     @tool(
@@ -146,7 +149,7 @@ def _build_options(system: str, client) -> ClaudeAgentOptions:
     sdk_server = create_sdk_mcp_server(name="penny_tools", version="1.0.0", tools=tools)
 
     return ClaudeAgentOptions(
-        model="claude-opus-4-8",
+        model=model,
         system_prompt=system,
         mcp_servers={"penny_tools": sdk_server},
         allowed_tools=["mcp__penny_tools"],
