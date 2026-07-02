@@ -63,6 +63,8 @@ function paintKpis(s) {
   $("k-clr").textContent = s.cleared;
   $("f-in").textContent = s.scanned; $("f-inv").textContent = s.investigating;
   $("f-flag").textContent = s.flagged; $("f-clr").textContent = s.cleared;
+  $("nav-flags").textContent = s.flagged; $("nav-clears").textContent = s.cleared;
+  $("flags-empty").hidden = s.flagged > 0; $("clears-empty").hidden = s.cleared > 0;
 }
 
 /* ---- rail rendering ---- */
@@ -79,7 +81,7 @@ function tickerRow(ev) {
     d.innerHTML = `<span class="tk-dot ${kind}"></span><span class="tk-branch">${esc((ev.branch || "").replace(/^McContext\s+/, ""))}</span>
       <span class="tk-type ${kind}">${esc(ev.txn)}</span><span class="tk-amt tnum">${money0(ev.amount_cents)}</span><span class="tk-time">${t}</span>`;
   }
-  const tk = $("ticker"); tk.prepend(d); while (tk.children.length > 12) tk.lastChild.remove();
+  const tk = $("ticker"); tk.prepend(d); while (tk.children.length > 40) tk.lastChild.remove();
 }
 function badgeFor(k) { return k.status === "routed" ? "routed" : k.status === "dismissed" ? "dismissed" : "new"; }
 function flagCard(k) {
@@ -201,6 +203,20 @@ function askPenny(q) {
   enterChatMode(); userMsg(q); streamInto(pennyMsg(""), "/turn", { session_id: SESSION, text: q });
 }
 
+/* ---- views (each drawer heading = its own page) ---- */
+const VIEWS = { chat: "Ask Penny", overview: "Overview", worklist: "Worklist", cleared: "Cleared", feed: "Live feed" };
+function showView(name) {
+  if (!VIEWS[name]) name = "chat";
+  document.body.dataset.view = name;
+  Object.keys(VIEWS).forEach(v => { const el = $("view-" + v); if (el) el.hidden = v !== name; });
+  document.querySelectorAll(".navitem").forEach(n => n.classList.toggle("active", n.dataset.view === name));
+  $("crumb").textContent = name === "chat" ? "" : VIEWS[name];
+  setDrawer(false);
+  if (name === "chat") $("ask").focus();
+}
+document.querySelectorAll(".navitem").forEach(n => n.onclick = () => showView(n.dataset.view));
+$("brandHome").onclick = () => { showView("chat"); return false; };
+
 /* ---- drawer ---- */
 const drawer = $("drawer"), scrim = $("scrim"), menuBtn = $("menuBtn");
 function setDrawer(open) {
@@ -220,7 +236,7 @@ $("injectBtn").onclick = () => fetch("/inject", { method: "POST" });
 
 /* ---- case processing in chat ---- */
 async function openCase(id) {
-  enterChatMode(); setDrawer(false);   // land the case IN the chat, drawer out of the way
+  enterChatMode(); showView("chat");   // a case is processed IN the chat, wherever you clicked it
   const res = await fetch(`/cases/${id}/open`, { method: "POST" });
   if (!res.ok) return;
   const k = await res.json();
