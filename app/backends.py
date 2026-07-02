@@ -93,8 +93,20 @@ async def _agent_session(session_id: str):
     return {"client": client, "capture": capture, "turn_lock": asyncio.Lock()}
 
 
+MAX_TURNS = int(os.environ.get("PENNY_MAX_TURNS_PER_SESSION", "25"))
+
+
 async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]]:
     from claude_agent_sdk import AssistantMessage, ResultMessage, TextBlock, ToolUseBlock
+
+    # cost governor: cap agent turns per browser session
+    used = sum(1 for t in store.recent_turns(session_id, limit=200) if t["role"] == "user")
+    if used >= MAX_TURNS:
+        yield {"type": "verdict", "kind": "flag",
+               "html": f"<b>Session turn limit reached ({MAX_TURNS}).</b> Reload the page for a "
+                       "fresh session — this cap keeps demo costs predictable."}
+        yield {"type": "done"}
+        return
 
     store.add_turn(session_id, "user", text)
     try:
@@ -113,6 +125,7 @@ async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]
 
             await client.query(text)
             finals: list[str] = []
+            result_msg = None
             async for msg in client.receive_response():
                 if isinstance(msg, AssistantMessage):
                     for block in msg.content:
@@ -129,6 +142,7 @@ async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]
                             elif name.startswith("submit_"):
                                 yield {"type": "trace", "tool": name, "text": "recording verdict"}
                 elif isinstance(msg, ResultMessage):
+                    result_msg = msg
                     break
 
             # captured verdicts → cases in the rail
@@ -148,6 +162,16 @@ async def agent_turn(session_id: str, text: str) -> AsyncIterator[dict[str, Any]
 
             # raw text — the client renders it as (safely escaped) markdown
             yield {"type": "verdict", "kind": "clr", "text": "\n".join(finals) or "(no answer)"}
+
+            # cost transparency — a governor stat and an efficiency pitch beat
+            cost = getattr(result_msg, "total_cost_usd", None)
+            dur = getattr(result_msg, "duration_ms", None)
+            if cost is not None:
+                bits = [f"investigation cost ${cost:.2f}"]
+                if dur:
+                    bits.append(f"{dur/1000:.0f}s")
+                bits.append(f"turn {used + 1}/{MAX_TURNS}")
+                yield {"type": "sys", "html": "⚡ " + " · ".join(bits)}
             store.add_turn(session_id, "penny", "\n".join(finals), {"backend": "agent"})
     except Exception as e:  # surface, don't hang the chat
         yield {"type": "verdict", "kind": "flag",
