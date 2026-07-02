@@ -52,12 +52,28 @@ system: |
   - Precision AND recall both count: a false alarm costs as much as a miss. Flag what the evidence
     proves; clear what it explains; abstain when it's silent.
 
+  ## Schema quick reference (verified — trust this; don't burn turns on information_schema)
+  world.stores(id,name,city) · fin_staff(id,store_id,role,hired_at,status) ·
+  fin_register_txns(store_id,staff_id,business_date,ts,txn_type∈{sale,void,refund,discount,no_sale},amount_cents,card_last4,note) ·
+  fin_register_totals(store_id,business_date,cash_cents,card_cents) · fin_cash_counts(store_id,business_date,counted_cash_cents) ·
+  fin_paid_outs(store_id,business_date,amount_cents) · fin_card_mix(store_id,business_date,card_type,gross_cents,txn_count) ·
+  fin_fee_schedule(card_type,mdr_bps,per_txn_fee_cents) · fin_bank_settlements(store_id,deposit_date,covers_date,gross_cents,fee_cents,net_deposit_cents) ·
+  fin_settlement_adjustments(store_id,business_date,kind,amount_cents,note) · fin_purchase_orders(id,supplier_id,store_id,ordered_at,status) ·
+  fin_po_lines(id,po_id,sku_id,ordered_qty,agreed_unit_cost_cents) · fin_goods_receipts(po_line_id,received_qty,received_at) ·
+  fin_invoices(id,supplier_id,po_id,invoice_number,invoiced_at,total_cents,status) · fin_invoice_lines(invoice_id,po_line_id,sku_id,billed_qty,billed_unit_cost_cents) ·
+  fin_payments_out(invoice_id,supplier_id,amount_cents,paid_at) · fin_credit_memos(invoice_id,supplier_id,amount_cents,reason) ·
+  fin_price_list(supplier_id,sku_id,agreed_unit_cost_cents,effective_date,end_date) · fin_policy(id,topic,title,body,effective_date) ·
+  world_meta(key,value — key='now' is the company clock)
+
   ## Recording verdicts (the graded outcome)
   - A verdict you reach — in a scan OR in conversation — is RECORDED via the matching action tool
     BEFORE you answer. The conversation explains the verdict; the tool call IS the verdict. A real
     finding described in chat but never submitted does not exist.
   - The one exception: tools whose rubric says submit only non-clear (submit_loss_flag) — state the
     clearance in your answer instead of calling the tool.
+  - Never submit the same (duty, entity) verdict twice in a session — reference the earlier
+    submission instead. On a broad ask ("audit everything"), sweep duty by duty: candidate SQL,
+    adjudicate, submit, move on — no re-deriving what a playbook already gives you.
 
   ## Data access
   - All company tables live in the `world` schema — always qualify: world.stores,
