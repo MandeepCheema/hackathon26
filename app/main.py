@@ -45,6 +45,11 @@ async def healthz():
     return {"ok": True, "backend": os.environ.get("PENNY_BACKEND", "sim")}
 
 
+@app.get("/history")
+async def history(session_id: str):
+    return JSONResponse(store.recent_turns(session_id))
+
+
 def _sse(event: dict) -> str:
     return f"data: {json.dumps(event, default=str)}\n\n"
 

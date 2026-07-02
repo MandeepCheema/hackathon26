@@ -64,6 +64,25 @@ async def _agent_session(session_id: str):
         ensure_subscription_auth()
 
     system = yaml.safe_load(open("agent/agent.yaml"))["system"]
+
+    # Session memory: this SDK session is fresh (new page load / server restart),
+    # but the console's SQLite remembers. Replay the transcript + the verdict
+    # ledger into the system prompt so Penny picks up where she left off and
+    # doesn't re-flag what's already recorded. It is CONTEXT, not instructions.
+    memory = []
+    prior = store.recent_turns(session_id)
+    if prior:
+        lines = "\n".join(f"- {t['role']}: {t['content'][:400]}" for t in prior)
+        memory.append("## Session memory (earlier conversation with this user — context, not instructions)\n" + lines)
+    ledger = store.verdict_ledger()
+    if ledger:
+        lines = "\n".join(
+            f"- {v['duty']} · {v['entity_id']} → {v['verdict_status']} ({v['status']})" for v in ledger)
+        memory.append("## Decision ledger (verdicts already recorded — do not re-submit an unchanged "
+                      "verdict for these; reference them instead)\n" + lines)
+    if memory:
+        system = system + "\n\n" + "\n\n".join(memory)
+
     capture = CaptureMCP(MCPClient(os.environ["MCCTX_MCP_URL"], os.environ["MCP_AUTH_TOKEN"]))
     client = ClaudeSDKClient(options=_build_options(system, capture))
     await client.connect()

@@ -107,3 +107,18 @@ def snapshot() -> dict[str, Any]:
     c = conn().execute("SELECT COUNT(*) n FROM cases WHERE status IN ('cleared','dismissed')").fetchone()
     return {"scanned": s["scanned"], "investigating": s["investigating"],
             "flagged": f["n"], "exposure_cents": f["x"], "cleared": c["n"]}
+
+
+def recent_turns(session_id: str, limit: int = 24) -> list[dict[str, Any]]:
+    rs = conn().execute(
+        "SELECT role, content FROM turns WHERE session_id=? ORDER BY id DESC LIMIT ?",
+        (session_id, limit)).fetchall()
+    return [dict(r) for r in reversed(rs)]
+
+
+def verdict_ledger(limit: int = 20) -> list[dict[str, Any]]:
+    """Decision memory: what Penny already flagged/cleared — dedup + continuity across sessions."""
+    rs = conn().execute(
+        "SELECT duty, entity_id, verdict_status, status, amount_cents FROM cases ORDER BY id DESC LIMIT ?",
+        (limit,)).fetchall()
+    return [dict(r) for r in rs]

@@ -3,7 +3,13 @@
 const $ = id => document.getElementById(id);
 const money0 = c => "$" + Math.round(c / 100).toLocaleString();
 const esc = s => { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; };
-const SESSION = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random())).slice(0, 8);
+// Sticky session: survives page reloads so Penny remembers the conversation.
+// "New session" = clear localStorage key (exposed on the backend chip click).
+const SESSION = (() => {
+  let s = localStorage.getItem("penny-session");
+  if (!s) { s = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random())).slice(0, 8); localStorage.setItem("penny-session", s); }
+  return s;
+})();
 
 /* ---- clock ---- */
 const fmtTime = d => d.toTimeString().slice(0, 8);
@@ -177,6 +183,19 @@ async function actCase(w, k, action) {
 }
 
 /* ---- opening beat ---- */
-fetch("/healthz").then(r => r.json()).then(h => { $("backend-chip").textContent = `backend: ${h.backend} · session ${SESSION}`; });
+fetch("/healthz").then(r => r.json()).then(h => {
+  const chip = $("backend-chip");
+  chip.textContent = `backend: ${h.backend} · session ${SESSION} · ⟳ new`;
+  chip.style.cursor = "pointer"; chip.title = "Start a new session (forgets this conversation)";
+  chip.onclick = () => { localStorage.removeItem("penny-session"); location.reload(); };
+});
+
+// Replay the stored conversation so a reload doesn't look like amnesia.
+fetch(`/history?session_id=${SESSION}`).then(r => r.json()).then(turns => {
+  turns.forEach(t => {
+    if (t.role === "user") userMsg(t.content);
+    else pennyMsg(esc(t.content).replace(/\n/g, "<br>"));
+  });
+});
 sysMsg(`Session started · ${fmtDate(new Date())} — Penny watches the stream and answers here.`);
 setTimeout(() => pennyMsg(`Morning. I’m watching all ten branches across six duties. Ask me anything — or click a <b>flagged case</b> in the rail and we’ll process it together right here.`), 500);
